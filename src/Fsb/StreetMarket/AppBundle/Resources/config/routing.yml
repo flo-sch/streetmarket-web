@@ -1,0 +1,6 @@
+fsb_street_market_app_homepage:
+    path:     /
+    defaults:
+        _controller: FsbStreetMarketAppBundle:Pages/Home:index
+    requirements:
+        _method: get

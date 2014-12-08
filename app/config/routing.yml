@@ -1,0 +1,4 @@
+fsb_street_market_app:
+    resource: "@FsbStreetMarketAppBundle/Resources/config/routing.yml"
+    prefix:   /
+
