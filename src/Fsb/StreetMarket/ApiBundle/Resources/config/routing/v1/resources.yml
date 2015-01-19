@@ -1,0 +1,3 @@
+fsb_street_market_api_v1_furnitures:
+    resource: "@FsbStreetMarketApiBundle/Resources/config/routing/v1/resources/furnitures.yml"
+    prefix:   /furnitures

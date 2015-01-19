@@ -1,0 +1,3 @@
+fsb_street_market_api:
+    resource: "@FsbStreetMarketApiBundle/Resources/config/routing/api.yml"
+    prefix:   /api

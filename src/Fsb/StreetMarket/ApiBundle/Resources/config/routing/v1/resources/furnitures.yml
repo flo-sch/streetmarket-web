@@ -1,0 +1,52 @@
+# fsb_imaginarium_api_furnitures:
+#     pattern:  /
+#     defaults:
+#         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:list"
+#         _format: json
+#     requirements:
+#         _method: get
+
+fsb_imaginarium_api_furnitures_list:
+    pattern:  /.{_format}
+    defaults:
+        _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:list"
+        _format: json
+    requirements:
+        _method: get
+        _format: json|xml
+
+fsb_imaginarium_api_furniture_create:
+    pattern:  /create.{_format}
+    defaults:
+        _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:create"
+        _format: json
+    requirements:
+        _method: post
+        _format: json|xml
+
+fsb_imaginarium_api_furniture_get:
+    pattern:  /{id}.{_format}
+    defaults:
+        _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:detail"
+        _format: json
+    requirements:
+        _method: get
+        _format: json|xml
+
+fsb_imaginarium_api_furniture_update:
+    pattern:  /{id}/update.{_format}
+    defaults:
+        _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:update"
+        _format: json
+    requirements:
+        _method: put
+        _format: json|xml
+
+fsb_imaginarium_api_furniture_delete:
+    pattern:  /{id}/delete.{_format}
+    defaults:
+        _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:delete"
+        _format: json
+    requirements:
+        _method: delete
+        _format: json|xml

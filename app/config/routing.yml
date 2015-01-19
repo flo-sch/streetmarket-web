@@ -1,3 +1,7 @@
+fsb_street_market_api:
+    resource: "@FsbStreetMarketApiBundle/Resources/config/routing.yml"
+    prefix:   /
+
 fsb_street_market_app:
     resource: "@FsbStreetMarketAppBundle/Resources/config/routing.yml"
     prefix:   /

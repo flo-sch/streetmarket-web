@@ -1,0 +1,4 @@
+services:
+#    fsb_street_market_api.example:
+#        class: Fsb\StreetMarket\ApiBundle\Example
+#        arguments: [@service_id, "plain_value", %parameter%]

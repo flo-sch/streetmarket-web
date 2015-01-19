@@ -328,7 +328,7 @@ class Furniture
         $this->picture = $picture;
 
         // check if we have an old image path
-        if (isset($this->getPicturePath())) {
+        if (isset($this->picturePath)) {
             // store the old name to delete after the update
             $this->temporaryPath = $this->getPicturePath();
             $this->setPicturePath(null);
@@ -396,7 +396,7 @@ class Furniture
      */
     public function preUpload()
     {
-        if (!is_null($this->getPicture()) {
+        if (!is_null($this->getPicture())) {
             // do whatever you want to generate a unique name
             $filename = sha1(uniqid(mt_rand(), true));
             $this->setPicturePath($filename . '.' . $this->getPicture()->guessExtension());
@@ -409,7 +409,7 @@ class Furniture
      */
     public function upload()
     {
-        if (!is_null($this->getPicture()) {
+        if (!is_null($this->getPicture())) {
             // if there is an error when moving the file, an exception will
             // be automatically thrown by move(). This will properly prevent
             // the entity from being persisted to the database on error

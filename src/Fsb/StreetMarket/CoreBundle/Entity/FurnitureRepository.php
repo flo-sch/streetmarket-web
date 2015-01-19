@@ -12,4 +12,17 @@ use Doctrine\ORM\EntityRepository;
  */
 class FurnitureRepository extends EntityRepository
 {
+    public function findAllActive()
+    {
+        $qb = $this->_em->createQueryBuilder();
+
+        $qb->select('f')
+            ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
+            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
+            ->setParameter('isHidden', false)
+        ;
+
+        return $qb->getQuery()->getResult();
+    }
 }

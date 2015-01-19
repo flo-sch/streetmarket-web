@@ -1,0 +1,7 @@
+fsb_street_market_api_doc:
+    resource: "@NelmioApiDocBundle/Resources/config/routing.yml"
+    prefix: /
+
+fsb_street_market_api_v1:
+    resource: "@FsbStreetMarketApiBundle/Resources/config/routing/v1/resources.yml"
+    prefix: /v1

@@ -16,7 +16,9 @@ class AppKernel extends Kernel
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
+            new Nelmio\ApiDocBundle\NelmioApiDocBundle(),
             new Fsb\StreetMarket\CoreBundle\FsbStreetMarketCoreBundle(),
+            new Fsb\StreetMarket\ApiBundle\FsbStreetMarketApiBundle(),
             new Fsb\StreetMarket\AppBundle\FsbStreetMarketAppBundle(),
         );
 
