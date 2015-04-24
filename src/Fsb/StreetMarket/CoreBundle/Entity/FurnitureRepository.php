@@ -12,6 +12,18 @@ use Doctrine\ORM\EntityRepository;
  */
 class FurnitureRepository extends EntityRepository
 {
+    public function findAll()
+    {
+        $qb = $this->_em->createQueryBuilder();
+
+        $qb->select('f')
+            ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
+            ->where($qb->expr()->isNotNull('f.removedAt'))
+        ;
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function findAllActive()
     {
         $qb = $this->_em->createQueryBuilder();
@@ -22,6 +34,25 @@ class FurnitureRepository extends EntityRepository
             ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
             ->setParameter('isHidden', false)
         ;
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findAllLatestActive($limit = null)
+    {
+        $qb = $this->_em->createQueryBuilder();
+
+        $qb->select('f')
+            ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
+            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
+            ->setParameter('isHidden', false)
+            ->orderBy('f.tookAt', 'DESC')
+        ;
+
+        if ($limit) {
+            $qb->setMaxResults($limit);
+        }
 
         return $qb->getQuery()->getResult();
     }
