@@ -221,6 +221,7 @@ class FurnitureController extends RestController
     {
         $statusCode = 200;
         $success = true;
+        $lastModificationDate = null;
         $data = array();
 
         $em = $this->getDoctrine()->getManager();
@@ -228,6 +229,8 @@ class FurnitureController extends RestController
         $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
 
         if ($furniture) {
+            $lastModificationDate = $furniture->getTookAt();
+
             $data['furniture'] = $furniture;
         } else {
             $statusCode = 404;
@@ -235,7 +238,7 @@ class FurnitureController extends RestController
             $data['message'] = 'This furniture does not exists';
         }
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('full'));
+        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('full'), $lastModificationDate);
     }
 
     /**
@@ -401,14 +404,16 @@ class FurnitureController extends RestController
      *     output="array"
      * )
      */
-    public function uploadAction($id)
+    public function uploadAction($id, $_format)
     {
+        $statusCode = 501;
+        $success = false;
         $data = array(
             'message' => 'This method is not yet implemented.'
         );
 
         // TODO
-        return $this->generateJsonResponse($data, 501, false);
+        return $this->generateJsonResponse($data, $statusCode, $success, $_format);
     }
 
     /**

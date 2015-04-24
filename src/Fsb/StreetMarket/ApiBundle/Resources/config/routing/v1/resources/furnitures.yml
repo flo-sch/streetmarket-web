@@ -37,11 +37,13 @@ fsb_streetmarket_api_furniture_update:
         id: \d+
 
 fsb_streetmarket_api_furniture_upload:
-    pattern:  /{id}/upload
+    pattern:  /{id}/upload.{_format}
     defaults:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:upload"
+        _format: json
     requirements:
         _method: put
+        _format: json
         id: \d+
 
 fsb_streetmarket_api_furniture_delete:

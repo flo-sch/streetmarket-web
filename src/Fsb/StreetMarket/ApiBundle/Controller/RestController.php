@@ -25,7 +25,7 @@ class RestController extends Controller
         return $this->container->get('templating')->renderResponse($view, $parameters, $response);
     }
 
-    protected function generateJsonResponse($data, $statusCode = 200, $success = false, $format, $groups = array('list'), $lastModificationDate = null)
+    protected function generateJsonResponse($data, $statusCode = 200, $success = false, $format = 'json', $groups = array('list'), $lastModificationDate = null)
     {
         $response = new Response();
 
