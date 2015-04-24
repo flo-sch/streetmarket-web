@@ -6,7 +6,6 @@ use DateTime;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 use JMS\Serializer\SerializationContext;
 
@@ -26,13 +25,22 @@ class RestController extends Controller
         return $this->container->get('templating')->renderResponse($view, $parameters, $response);
     }
 
-    protected function generateJsonResponse($data, $statusCode = 200, $success = false)
+    protected function generateJsonResponse($data, $statusCode = 200, $success = false, $format, $groups = array('list'))
     {
         if (!array_key_exists('success', $data)) {
             $data['success'] = $success;
         }
 
-        $response = new JsonResponse($data, $statusCode);
+        $serializer = $this->container->get('jms_serializer');
+
+        // $response = new JsonResponse($data, $statusCode);
+
+        $response = new Response($serializer->serialize($data, $format, SerializationContext::create()
+            ->setVersion(1)
+            ->enableMaxDepthChecks()
+            ->setGroups($groups)
+            ->setSerializeNull(true)
+        ), $statusCode);
 
         // Set response as public
         $response->setPublic();

@@ -1,4 +1,11 @@
+parameters:
+    fsb_street_market_api.body_listener.class: Fsb\StreetMarket\ApiBundle\Listener\BodyListener
+
 services:
-#    fsb_street_market_api.example:
-#        class: Fsb\StreetMarket\ApiBundle\Example
 #        arguments: [@service_id, "plain_value", %parameter%]
+
+    # REST Request body listener
+    fsb_street_market_api.body_listener:
+        class: %fsb_street_market_api.body_listener.class%
+        tags:
+            - { name: kernel.event_subscriber }

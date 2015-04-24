@@ -3,6 +3,9 @@
 namespace Fsb\StreetMarket\ApiBundle\Controller\V1\Resources;
 
 use DateTime;
+use Exception;
+
+use Doctrine\ORM\ORMException;
 
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
@@ -34,12 +37,13 @@ class FurnitureController extends RestController
         $data = array();
 
         $em = $this->getDoctrine()->getManager();
-
         $furnitures = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findAllActive();
 
-        return $this->generateJsonResponse(array(
+        $data = array(
             'furnitures' => $furnitures
-        ), $statusCode, $success, $_format, array('list'));
+        );
+
+        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('list'));
     }
 
     /**
@@ -53,76 +57,39 @@ class FurnitureController extends RestController
      *         200="Returned when successful",
      *         400="Returned when bad request (missing mandatory parameters)"
      *     },
-     *     requirements={
-     *         {
-     *             "name"="sorting",
-     *             "dataType"="integer",
-     *             "requirement"="\d+",
-     *             "description"="Ordre d'affichage"
-     *         }
-     *     },
+     *     requirements={},
      *     parameters={
      *         {
      *             "name"="created_at",
-     *             "dataType"="string",
-     *             "required"=false,
-     *             "format"="yyyy-MM-dd HH:mm:SS",
-     *             "description"="Date de création de of the furniture"
+     *             "dataType"="DateTime",
+     *             "required"=true,
+     *             "format"="yyyy-MM-ddTHH:mm:SSZ",
+     *             "description"="Date when the furniture has been created"
      *         },
      *         {
-     *             "name"="nickname",
+     *             "name"="title",
      *             "dataType"="string",
      *             "required"=true,
-     *             "description"="Surnom de of the furniture"
+     *             "description"="Title of the furniture"
      *         },
      *         {
-     *             "name"="birth_at",
-     *             "dataType"="string",
-     *             "required"=false,
-     *             "format"="yyyy-MM-dd HH:mm:SS",
-     *             "description"="Date de naissance de of the furniture"
-     *         },
-     *         {
-     *             "name"="music_type",
-     *             "dataType"="string",
+     *             "name"="took_at",
+     *             "dataType"="DateTime",
      *             "required"=true,
-     *             "description"="Genre musical"
+     *             "format"="yyyy-MM-ddTHH:mm:SSZ",
+     *             "description"="Date when the furniture has been taken"
      *         },
      *         {
-     *             "name"="sorting",
-     *             "dataType"="integer",
-     *             "required"=false,
-     *             "description"="Ordre d'affichage"
+     *             "name"="latitude",
+     *             "dataType"="float",
+     *             "required"=true,
+     *             "description"="Latitude of the place where the furniture has been taken"
      *         },
      *         {
-     *             "name"="picture",
-     *             "dataType"="blob",
-     *             "required"=false,
-     *             "description"="Photo"
-     *         },
-     *         {
-     *             "name"="presentation",
-     *             "dataType"="string",
-     *             "required"=false,
-     *             "description"="Texte de présentation"
-     *         },
-     *         {
-     *             "name"="facebook_link",
-     *             "dataType"="string",
-     *             "required"=false,
-     *             "description"="Lien facebook de of the furniture"
-     *         },
-     *         {
-     *             "name"="spotify_uri",
-     *             "dataType"="string",
-     *             "required"=false,
-     *             "description"="URI Spotify de of the furniture"
-     *         },
-     *         {
-     *             "name"="deezer_album",
-     *             "dataType"="string",
-     *             "required"=false,
-     *             "description"="ID de l'album Deezer de of the furniture"
+     *             "name"="longitude",
+     *             "dataType"="float",
+     *             "required"=true,
+     *             "description"="Longitude of the place where the furniture has been taken"
      *         }
      *     },
      *     output="array"
@@ -130,50 +97,84 @@ class FurnitureController extends RestController
      */
     public function createAction($_format)
     {
-        $statusCode = 200;
+        $statusCode = 201;
         $success = true;
         $data = array();
 
-        $em = $this->getDoctrine()->getManager();
-
         $request = $this->getRequest();
 
-        $createdAt              = DateTime::createFromFormat('Y-m-d H:i:s', substr($request->request->get('created_at'), 0, 19));
-        $nickname               = $request->request->get('nickname');
-        $birthAt                = DateTime::createFromFormat('Y-m-d H:i:s', substr($request->request->get('birth_at'), 0, 19));
-        $musicType              = $request->request->get('music_type');
-        $sorting                = $request->request->get('sorting');
-        $picture                = null;
-        $presentation           = $request->request->get('presentation');
-        $facebookLink           = $request->request->get('facebook_link');
-        $spotifyUri             = $request->request->get('spotify_uri');
-        $deezerAlbum            = $request->request->get('deezer_album');
-
-        $furniture                 = new Furniture();
-
-        if ($nickname) {
-            $furniture->setNickname($nickname);
-            $furniture->setSlug($this->sanitise($nickname));
-        } else {
-            $data['message'][] = 'Undefined nickname';
+        try {
+            $createdAt  = new DateTime($request->request->get('created_at'));
+        }
+        catch (Exception $e) {
+            $createdAt  = false;
         }
 
-        if ($musicType) {
-            $furniture->setMusicType($musicType);
-        } else {
-            $data['message'][] = 'Undefined music type';
+        $title          = $request->request->get('title');
+
+        try {
+            $tookAt     = new DateTime($request->request->get('took_at'));
+        }
+        catch (Exception $e) {
+            $tookAt     = false;
         }
 
-        if ($nickname && $musicType) {
+        $latitude       = floatval($request->request->get('latitude'));
+        $longitude      = floatval($request->request->get('longitude'));
+
+        if (!$createdAt) {
+            $success = false;
+            $data['errors'][] = 'Undefined or unvalid parameter: took_at';
+        }
+
+        if (!$title) {
+            $success = false;
+            $data['errors'][] = 'Undefined parameter: title';
+        }
+
+        if (!$tookAt) {
+            $success = false;
+            $data['errors'][] = 'Undefined or unvalid parameter: took_at';
+        }
+
+        if (!$latitude || $latitude === 0) {
+            $success = false;
+            $data['errors'][] = 'Unvalid or unvalid parameter: latitude';
+        }
+
+        if (!$longitude || $longitude === 0) {
+            $success = false;
+            $data['errors'][] = 'Undefined or unvalid parameter: longitude';
+        }
+
+        if ($success) {
+            $furniture = new Furniture();
+            $furniture->setCreatedAt($createdAt);
+            $furniture->setUpdatedAt($createdAt);
+            $furniture->setIsHidden(true);
+            $furniture->setTitle($title);
+            // Force hide it until its picture is uploaded [REQUEST /{id}/upload]
             $furniture->setTookAt($tookAt);
+            $furniture->setLatitude($latitude);
+            $furniture->setLongitude($longitude);
 
-            $em->persist($furniture);
-            $em->flush();
+            $em = $this->getDoctrine()->getManager();
 
-            $data['furniture'] = $furniture;
+            try {
+                $em->persist($furniture);
+                $em->flush();
+
+                $data['furniture'] = $furniture;
+            }
+            catch (ORMException $ORME) {
+                $this->get('logger')->error($ORME->getMessage());
+
+                $statusCode = 500;
+                $data['message'] = 'An error has occured. Please try again later.';
+            }
         } else {
             $statusCode = 400;
-            $success = false;
+            $data['message'] = 'Bad request: unvalid parameters.';
         }
 
         return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('detail'));
@@ -187,6 +188,7 @@ class FurnitureController extends RestController
      *     description="Find one furniture by ID",
      *     statusCodes={
      *         200="Returned when successful",
+     *         404="Returned when the furniture is not found",
      *         404="Returned when not found"
      *     },
      *     requirements={
@@ -230,15 +232,16 @@ class FurnitureController extends RestController
     }
 
     /**
-     * Update an furniture
+     * Update a furniture
      *
      * @ApiDoc(
      *     section="Furnitures",
-     *     description="Update an furniture",
+     *     description="Update a furniture",
      *     method="put",
      *     statusCodes={
      *         200="Returned when successful",
-     *         400="Returned when bad request (missing mandatory parameters)"
+     *         404="Returned when the furniture is not found",
+     *         400="Returned in case of bad request (missing mandatory parameters)"
      *     },
      *     requirements={
      *         {
@@ -256,17 +259,36 @@ class FurnitureController extends RestController
      *             "description"="ID de of the furniture"
      *         },
      *         {
+     *             "name"="updated_at",
+     *             "dataType"="DateTime",
+     *             "required"=false,
+     *             "format"="yyyy-MM-ddTHH:mm:SSZ",
+     *             "description"="Date when the furniture has been updated"
+     *         },
+     *         {
      *             "name"="title",
      *             "dataType"="string",
-     *             "required"=true,
+     *             "required"=false,
      *             "description"="Title of the furniture"
      *         },
      *         {
      *             "name"="took_at",
-     *             "dataType"="string",
-     *             "required"=true,
-     *             "format"="yyyy-MM-dd HH:mm:SS",
+     *             "dataType"="DateTime",
+     *             "required"=false,
+     *             "format"="yyyy-MM-ddTHH:mm:SSZ",
      *             "description"="Date when the furniture has been taken"
+     *         },
+     *         {
+     *             "name"="latitude",
+     *             "dataType"="float",
+     *             "required"=false,
+     *             "description"="Latitude of the place where the furniture has been taken"
+     *         },
+     *         {
+     *             "name"="longitude",
+     *             "dataType"="float",
+     *             "required"=false,
+     *             "description"="Longitude of the place where the furniture has been taken"
      *         }
      *     },
      *     output="array"
@@ -278,87 +300,120 @@ class FurnitureController extends RestController
         $success = true;
         $data = array();
 
+        $request = $this->getRequest();
         $em = $this->getDoctrine()->getManager();
         $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
 
-        $request = $this->getRequest();
 
         if ($furniture) {
-            $updatedAt              = DateTime::createFromFormat('Y-m-d H:i:s', substr($request->request->get('updated_at'), 0, 19));
-            $nickname               = $request->request->get('nickname');
-            $birthAt                = DateTime::createFromFormat('Y-m-d H:i:s', substr($request->request->get('birth_at'), 0, 19));
-            $musicType              = $request->request->get('music_type');
-            $sorting                = $request->request->get('sorting');
-            $picture                = null;
-            $presentation           = $request->request->get('presentation');
-            $facebookLink           = $request->request->get('facebook_link');
-            $spotifyUri             = $request->request->get('spotify_uri');
-            $deezerAlbum            = $request->request->get('deezer_album');
+            $title          = $request->request->get('title');
+
+            try {
+                $updatedAt  = new DateTime($request->request->get('updated_at'));
+            }
+            catch (Exception $e) {
+                $updatedAt  = false;
+            }
+
+            try {
+                $tookAt     = new DateTime($request->request->get('took_at'));
+            }
+            catch (Exception $e) {
+                $tookAt     = false;
+            }
+
+            $latitude       = floatval($request->request->get('latitude'));
+            $longitude      = floatval($request->request->get('longitude'));
 
             if ($updatedAt) {
                 $furniture->setUpdatedAt($updatedAt);
             }
 
-            if ($nickname) {
-                $furniture->setNickname($nickname);
-                $furniture->setSlug($this->sanitise($nickname));
+            if ($title) {
+                $furniture->setTitle($title);
             }
 
-            if ($birthAt) {
-                $furniture->setBirthAt($birthAt);
+            if ($tookAt) {
+                $furniture->setTookAt($tookAt);
             }
 
-            if ($musicType) {
-                $furniture->setMusicType($musicType);
+            if ($latitude) {
+                $furniture->setLatitude($latitude);
             }
 
-            if ($sorting) {
-                $furniture->setSorting($sorting);
+            if ($longitude) {
+                $furniture->setLongitude($longitude);
             }
 
-            if ($picture) {
-                $furniture->setPicture($picture);
+            try {
+                $em->persist($furniture);
+                $em->flush();
+
+                $data['furniture'] = $furniture;
             }
+            catch (ORMException $ORME) {
+                $this->get('logger')->error($ORME->getMessage());
 
-            if ($presentation) {
-                $furniture->setPresentation($presentation);
+                $statusCode = 500;
+                $data['message'] = 'An error has occured. Please try again later.';
             }
-
-            if ($facebookLink) {
-                $furniture->setFacebookLink($facebookLink);
-            }
-
-            if ($spotifyUri) {
-                $furniture->setSpotifyUri($spotifyUri);
-            }
-
-            if ($deezerAlbum) {
-                $furniture->setDeezerAlbum($deezerAlbum);
-            }
-
-            $em->persist($furniture);
-            $em->flush();
-
-            $data['furniture'] = $furniture;
         } else {
             $statusCode = 404;
-            $success = false;
-            $data['message'] = 'This furniture does not exists';
+            $data['message'] = 'Bad request: unvalid parameters.';
         }
 
         return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('detail'));
     }
 
     /**
-     * Delete an furniture by ID
+     * Upload the picture of a furniture by ID
      *
      * @ApiDoc(
      *     section="Furnitures",
-     *     description="Delete an furniture by ID",
+     *     description="Upload the picture of a furniture by ID",
+     *     method="put",
+     *     statusCodes={
+     *         501="Returned because the method is not yet implemented"
+     *     },
+     *     requirements={
+     *         {
+     *             "name"="id",
+     *             "dataType"="integer",
+     *             "requirement"="\d+",
+     *             "description"="ID of the furnituree"
+     *         }
+     *     },
+     *     parameters={
+     *         {
+     *             "name"="id",
+     *             "dataType"="integer",
+     *             "required"=true,
+     *             "description"="ID of the furnituree"
+     *         }
+     *     },
+     *     output="array"
+     * )
+     */
+    public function uploadAction($id)
+    {
+        $data = array(
+            'message' => 'This method is not yet implemented.'
+        );
+
+        // TODO
+        return $this->generateJsonResponse($data, 501, false);
+    }
+
+    /**
+     * Delete a furniture by ID
+     *
+     * @ApiDoc(
+     *     section="Furnitures",
+     *     description="Delete a furniture by ID",
      *     method="delete",
      *     statusCodes={
      *         200="Returned when successful",
-     *         404="Returned when not found"
+     *         404="Returned when the furniture is not found"
      *     },
      *     requirements={
      *         {
@@ -381,7 +436,7 @@ class FurnitureController extends RestController
      */
     public function deleteAction($id, $_format)
     {
-        $statusCode = 200;
+        $statusCode = 204;
         $success = true;
         $data = array();
 
@@ -389,11 +444,20 @@ class FurnitureController extends RestController
         $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
 
         if ($furniture) {
-            $data['furniture'] = $furniture;
-
             $furniture->setRemovedAt(new DateTime());
-            $em->persist($furniture);
-            $em->flush();
+
+            try {
+                $em->persist($furniture);
+                $em->flush();
+
+                $data['furniture'] = $furniture;
+            }
+            catch (ORMException $ORME) {
+                $this->get('logger')->error($ORME->getMessage());
+
+                $statusCode = 500;
+                $data['message'] = 'An error has occured. Please try again later.';
+            }
         } else {
             $statusCode = 404;
             $success = false;
