@@ -2,6 +2,8 @@
 
 namespace Fsb\StreetMarket\CoreBundle\Entity;
 
+use DateTime;
+
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Validator\Constraints as Assert;
@@ -26,23 +28,23 @@ class Furniture
     private $id;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     private $createdAt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime")
      */
     private $updatedAt;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
-     * @ORM\Column(name="removed_at", type="datetime")
+     * @ORM\Column(name="removed_at", type="datetime", nullable=true)
      */
     private $removedAt;
 
@@ -61,7 +63,7 @@ class Furniture
     private $title;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="took_at", type="datetime")
      * @Assert\NotNull()
@@ -100,6 +102,21 @@ class Furniture
 
     private $temporaryPath;
 
+    /**
+     * PHP Magic constructor
+     * Initialise instance with default values
+     *
+     * @return Furniture
+     */
+    public function __construct()
+    {
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
+        $this->isHidden = true;
+
+        return $this;
+    }
+
 
     /**
      * Get id
@@ -114,7 +131,7 @@ class Furniture
     /**
      * Set createdAt
      *
-     * @param \DateTime $createdAt
+     * @param DateTime $createdAt
      * @return Furniture
      */
     public function setCreatedAt($createdAt)
@@ -127,7 +144,7 @@ class Furniture
     /**
      * Get createdAt
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getCreatedAt()
     {
@@ -137,7 +154,7 @@ class Furniture
     /**
      * Set updatedAt
      *
-     * @param \DateTime $updatedAt
+     * @param DateTime $updatedAt
      * @return Furniture
      */
     public function setUpdatedAt($updatedAt)
@@ -150,7 +167,7 @@ class Furniture
     /**
      * Get updatedAt
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getUpdatedAt()
     {
@@ -160,7 +177,7 @@ class Furniture
     /**
      * Set removedAt
      *
-     * @param \DateTime $removedAt
+     * @param DateTime $removedAt
      * @return Furniture
      */
     public function setRemovedAt($removedAt)
@@ -173,7 +190,7 @@ class Furniture
     /**
      * Get removedAt
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getRemovedAt()
     {
@@ -183,7 +200,7 @@ class Furniture
     /**
      * Set tookAt
      *
-     * @param \DateTime $tookAt
+     * @param DateTime $tookAt
      * @return Furniture
      */
     public function setTookAt($tookAt)
@@ -196,7 +213,7 @@ class Furniture
     /**
      * Get tookAt
      *
-     * @return \DateTime
+     * @return DateTime
      */
     public function getTookAt()
     {
