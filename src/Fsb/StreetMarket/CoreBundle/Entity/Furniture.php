@@ -3,11 +3,17 @@
 namespace Fsb\StreetMarket\CoreBundle\Entity;
 
 use DateTime;
+use Serializable;
 
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
+use JMS\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\SerializedName;
 
 /**
  * Furniture
@@ -15,8 +21,10 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * @ORM\Table(name="furnitures")
  * @ORM\Entity(repositoryClass="Fsb\StreetMarket\CoreBundle\Entity\FurnitureRepository")
  * @ORM\HasLifecycleCallbacks()
+ *
+ * @ExclusionPolicy("all")
  */
-class Furniture
+class Furniture implements Serializable
 {
     /**
      * @var integer
@@ -24,6 +32,9 @@ class Furniture
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $id;
 
@@ -31,6 +42,9 @@ class Furniture
      * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $createdAt;
 
@@ -38,6 +52,9 @@ class Furniture
      * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime")
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $updatedAt;
 
@@ -59,6 +76,9 @@ class Furniture
      * @var string
      *
      * @ORM\Column(name="title", type="string", length=255)
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $title;
 
@@ -67,6 +87,9 @@ class Furniture
      *
      * @ORM\Column(name="took_at", type="datetime")
      * @Assert\NotNull()
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $tookAt;
 
@@ -75,6 +98,9 @@ class Furniture
      *
      * @ORM\Column(name="latitude", type="decimal")
      * @Assert\NotNull()
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $latitude;
 
@@ -83,6 +109,9 @@ class Furniture
      *
      * @ORM\Column(name="longitude", type="decimal")
      * @Assert\NotNull()
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $longitude;
 
@@ -91,6 +120,9 @@ class Furniture
      *
      * @ORM\Column(name="picture_path", type="string", length=255)
      * @Assert\NotBlank()
+     *
+     * @Expose()
+     * @Groups({"list", "detail", "full"})
      */
     private $picturePath;
 
@@ -121,6 +153,26 @@ class Furniture
         $this->isHidden = true;
 
         return $this;
+    }
+
+    /**
+     * @see \Serializable::serialize()
+     */
+    public function serialize()
+    {
+        return serialize(array(
+            $this->id,
+        ));
+    }
+
+    /**
+     * @see \Serializable::unserialize()
+     */
+    public function unserialize($serialized)
+    {
+        list (
+            $this->id,
+        ) = unserialize($serialized);
     }
 
 
