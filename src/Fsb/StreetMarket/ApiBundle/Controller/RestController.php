@@ -25,40 +25,56 @@ class RestController extends Controller
         return $this->container->get('templating')->renderResponse($view, $parameters, $response);
     }
 
-    protected function generateJsonResponse($data, $statusCode = 200, $success = false, $format, $groups = array('list'))
+    protected function generateJsonResponse($data, $statusCode = 200, $success = false, $format, $groups = array('list'), $lastModificationDate = null)
     {
-        if (!array_key_exists('success', $data)) {
-            $data['success'] = $success;
-        }
-
-        $serializer = $this->container->get('jms_serializer');
-
-        // $response = new JsonResponse($data, $statusCode);
-
-        $response = new Response($serializer->serialize($data, $format, SerializationContext::create()
-            ->setVersion(1)
-            ->enableMaxDepthChecks()
-            ->setGroups($groups)
-            ->setSerializeNull(true)
-        ), $statusCode);
+        $response = new Response();
 
         // Set response as public
         $response->setPublic();
 
-        $cacheValidity = in_array($this->container->get('kernel')->getEnvironment(), array('dev', 'test')) ? 0 : 300;
+        // Check data format
+        if (!array_key_exists('success', $data)) {
+            $data['success'] = $success;
+        }
 
-        // Expiration Date
-        $expiresAt = new DateTime();
-        $expiresAt->modify('+' . $cacheValidity . ' seconds');
-        $response->setExpires($expiresAt);
+        // Serialize Response
+        $serializer = $this->container->get('jms_serializer');
+        $response->setContent($serializer->serialize($data, $format, SerializationContext::create()
+            ->setVersion(1)
+            ->enableMaxDepthChecks()
+            ->setGroups($groups)
+            ->setSerializeNull(true)
+        ));
 
-        // Response Max Age
-        $response->setMaxAge($cacheValidity);
-        $response->setSharedMaxAge($cacheValidity);
+        // Set HTTP status code
+        $response->setStatusCode($statusCode);
 
-        // ETag
+        // Set ETag
         $response->setETag(md5($response->getContent()));
-        $response->isNotModified($this->getRequest());
+
+
+        // Check if the response was modified, in order to send a 304 one otherwise
+        if ($lastModificationDate) {
+            $response->setLastModified($lastModificationDate);
+        }
+
+        if ($response->isNotModified($this->getRequest())) {
+            // Send a 304 Response
+            $response->setNotModified();
+        } else {
+            // Set Up cache validity
+            $cacheValidity = in_array($this->container->get('kernel')->getEnvironment(), array('dev', 'test')) ? 10 : 300;
+
+            // Expiration Date
+            $expiresAt = new DateTime();
+            $expiresAt->modify('+' . $cacheValidity . ' seconds');
+            $response->setExpires($expiresAt);
+
+            // Response Max Age
+            $response->setMaxAge($cacheValidity);
+            $response->setSharedMaxAge($cacheValidity);
+            $response->headers->addCacheControlDirective('must-revalidate', true);
+        }
 
         return $response;
     }

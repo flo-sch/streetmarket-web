@@ -96,7 +96,7 @@ class Furniture implements Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="latitude", type="decimal")
+     * @ORM\Column(name="latitude", type="decimal", precision=10, scale=7)
      * @Assert\NotNull()
      *
      * @Expose()
@@ -107,7 +107,7 @@ class Furniture implements Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="longitude", type="decimal")
+     * @ORM\Column(name="longitude", type="decimal", precision=10, scale=7)
      * @Assert\NotNull()
      *
      * @Expose()
@@ -118,7 +118,7 @@ class Furniture implements Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="picture_path", type="string", length=255)
+     * @ORM\Column(name="picture_path", type="string", length=255, nullable=true)
      * @Assert\NotBlank()
      *
      * @Expose()

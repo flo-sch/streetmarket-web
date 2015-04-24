@@ -34,16 +34,23 @@ class FurnitureController extends RestController
     {
         $statusCode = 200;
         $success = true;
+        $lastModificationDate = null;
         $data = array();
 
         $em = $this->getDoctrine()->getManager();
-        $furnitures = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findAllActive();
+        $furnitures = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findAllLatestActive();
+
+        $lastFurniture = end($furnitures);
+
+        if ($lastFurniture) {
+            $lastModificationDate = $lastFurniture->getTookAt();
+        }
 
         $data = array(
             'furnitures' => $furnitures
         );
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('list'));
+        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('list'), $lastModificationDate);
     }
 
     /**

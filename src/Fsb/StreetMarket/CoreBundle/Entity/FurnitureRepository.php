@@ -19,7 +19,7 @@ class FurnitureRepository extends EntityRepository
 
         $qb->select('f')
             ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
-            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->where($qb->expr()->isNull('f.removedAt'))
         ;
 
         return $qb->getQuery()->getResult();
@@ -31,7 +31,7 @@ class FurnitureRepository extends EntityRepository
 
         $qb->select('f')
             ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
-            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->where($qb->expr()->isNull('f.removedAt'))
             ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
             ->setParameter('isHidden', false)
         ;
@@ -45,7 +45,7 @@ class FurnitureRepository extends EntityRepository
 
         $qb->select('f')
             ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
-            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->where($qb->expr()->isNull('f.removedAt'))
             ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
             ->setParameter('isHidden', false)
             ->orderBy('f.tookAt', 'DESC')
@@ -66,7 +66,7 @@ class FurnitureRepository extends EntityRepository
 
         $qb->select('f')
             ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
-            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->where($qb->expr()->isNull('f.removedAt'))
             ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
             ->andWhere($qb->expr()->eq('f.id', ':id'))
             ->setParameter('isHidden', false)
