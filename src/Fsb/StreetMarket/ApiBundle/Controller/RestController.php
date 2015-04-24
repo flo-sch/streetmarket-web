@@ -25,7 +25,7 @@ class RestController extends Controller
         return $this->container->get('templating')->renderResponse($view, $parameters, $response);
     }
 
-    protected function generateJsonResponse($data, $statusCode = 200, $success = false, $format = 'json', $groups = array('list'), $lastModificationDate = null)
+    protected function generateResponse($data, $statusCode = 200, $success = false, $format = 'json', $groups = array('list'), $lastModificationDate = null)
     {
         $response = new Response();
 
@@ -33,7 +33,7 @@ class RestController extends Controller
         $response->setPublic();
 
         // Check data format
-        if (!array_key_exists('success', $data)) {
+        if ($format === 'json' && !array_key_exists('success', $data)) {
             $data['success'] = $success;
         }
 

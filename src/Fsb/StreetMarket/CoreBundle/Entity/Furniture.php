@@ -14,6 +14,7 @@ use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
 use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\SerializedName;
+use JMS\Serializer\Annotation\XmlRoot;
 
 /**
  * Furniture
@@ -23,6 +24,7 @@ use JMS\Serializer\Annotation\SerializedName;
  * @ORM\HasLifecycleCallbacks()
  *
  * @ExclusionPolicy("all")
+ * @XmlRoot("furniture")
  */
 class Furniture implements Serializable
 {

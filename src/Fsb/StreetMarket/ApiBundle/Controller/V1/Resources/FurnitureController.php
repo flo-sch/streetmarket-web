@@ -46,11 +46,13 @@ class FurnitureController extends RestController
             $lastModificationDate = $lastFurniture->getTookAt();
         }
 
-        $data = array(
-            'furnitures' => $furnitures
-        );
+        if ($_format === 'xml') {
+            $data = $furnitures;
+        } else {
+            $data['furnitures'] = $furnitures;
+        }
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('list'), $lastModificationDate);
+        return $this->generateResponse($data, $statusCode, $success, $_format, array('list'), $lastModificationDate);
     }
 
     /**
@@ -171,7 +173,11 @@ class FurnitureController extends RestController
                 $em->persist($furniture);
                 $em->flush();
 
-                $data['furniture'] = $furniture;
+                if ($_format === 'xml') {
+                    $data = $furniture;
+                } else {
+                    $data['furniture'] = $furniture;
+                }
             }
             catch (ORMException $ORME) {
                 $this->get('logger')->error($ORME->getMessage());
@@ -184,7 +190,7 @@ class FurnitureController extends RestController
             $data['message'] = 'Bad request: unvalid parameters.';
         }
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('detail'));
+        return $this->generateResponse($data, $statusCode, $success, $_format, array('detail'));
     }
 
     /**
@@ -231,14 +237,18 @@ class FurnitureController extends RestController
         if ($furniture) {
             $lastModificationDate = $furniture->getTookAt();
 
-            $data['furniture'] = $furniture;
+            if ($_format === 'xml') {
+                $data = $furniture;
+            } else {
+                $data['furniture'] = $furniture;
+            }
         } else {
             $statusCode = 404;
             $success = false;
             $data['message'] = 'This furniture does not exists';
         }
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('full'), $lastModificationDate);
+        return $this->generateResponse($data, $statusCode, $success, $_format, array('full'), $lastModificationDate);
     }
 
     /**
@@ -359,7 +369,11 @@ class FurnitureController extends RestController
                 $em->persist($furniture);
                 $em->flush();
 
-                $data['furniture'] = $furniture;
+                if ($_format === 'xml') {
+                    $data = $furniture;
+                } else {
+                    $data['furniture'] = $furniture;
+                }
             }
             catch (ORMException $ORME) {
                 $this->get('logger')->error($ORME->getMessage());
@@ -372,7 +386,7 @@ class FurnitureController extends RestController
             $data['message'] = 'Bad request: unvalid parameters.';
         }
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('detail'));
+        return $this->generateResponse($data, $statusCode, $success, $_format, array('detail'));
     }
 
     /**
@@ -413,7 +427,7 @@ class FurnitureController extends RestController
         );
 
         // TODO
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format);
+        return $this->generateResponse($data, $statusCode, $success, $_format);
     }
 
     /**
@@ -462,7 +476,11 @@ class FurnitureController extends RestController
                 $em->persist($furniture);
                 $em->flush();
 
-                $data['furniture'] = $furniture;
+                if ($_format === 'xml') {
+                    $data = $furniture;
+                } else {
+                    $data['furniture'] = $furniture;
+                }
             }
             catch (ORMException $ORME) {
                 $this->get('logger')->error($ORME->getMessage());
@@ -476,6 +494,6 @@ class FurnitureController extends RestController
             $data['message'] = 'This furniture does not exists';
         }
 
-        return $this->generateJsonResponse($data, $statusCode, $success, $_format, array('detail'));
+        return $this->generateResponse($data, $statusCode, $success, $_format, array('detail'));
     }
 }

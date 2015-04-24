@@ -5,7 +5,7 @@ fsb_streetmarket_api_furnitures_list:
         _format: json
     requirements:
         _method: get
-        _format: json
+        _format: json|xml
 
 fsb_streetmarket_api_furniture_create:
     pattern:  /create.{_format}
@@ -14,7 +14,7 @@ fsb_streetmarket_api_furniture_create:
         _format: json
     requirements:
         _method: post
-        _format: json
+        _format: json|xml
 
 fsb_streetmarket_api_furniture_get:
     pattern:  /{id}.{_format}
@@ -23,7 +23,7 @@ fsb_streetmarket_api_furniture_get:
         _format: json
     requirements:
         _method: get
-        _format: json
+        _format: json|xml
         id: \d+
 
 fsb_streetmarket_api_furniture_update:
@@ -33,7 +33,7 @@ fsb_streetmarket_api_furniture_update:
         _format: json
     requirements:
         _method: put
-        _format: json
+        _format: json|xml
         id: \d+
 
 fsb_streetmarket_api_furniture_upload:
@@ -43,7 +43,7 @@ fsb_streetmarket_api_furniture_upload:
         _format: json
     requirements:
         _method: put
-        _format: json
+        _format: json|xml
         id: \d+
 
 fsb_streetmarket_api_furniture_delete:
@@ -53,5 +53,5 @@ fsb_streetmarket_api_furniture_delete:
         _format: json
     requirements:
         _method: delete
-        _format: json
+        _format: json|xml
         id: \d+
