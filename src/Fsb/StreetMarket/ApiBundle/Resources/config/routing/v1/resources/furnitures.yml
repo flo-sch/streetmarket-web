@@ -1,12 +1,4 @@
-# fsb_imaginarium_api_furnitures:
-#     pattern:  /
-#     defaults:
-#         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:list"
-#         _format: json
-#     requirements:
-#         _method: get
-
-fsb_imaginarium_api_furnitures_list:
+fsb_streetmarket_api_furnitures_list:
     pattern:  /.{_format}
     defaults:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:list"
@@ -15,7 +7,7 @@ fsb_imaginarium_api_furnitures_list:
         _method: get
         _format: json|xml
 
-fsb_imaginarium_api_furniture_create:
+fsb_streetmarket_api_furniture_create:
     pattern:  /create.{_format}
     defaults:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:create"
@@ -24,7 +16,7 @@ fsb_imaginarium_api_furniture_create:
         _method: post
         _format: json|xml
 
-fsb_imaginarium_api_furniture_get:
+fsb_streetmarket_api_furniture_get:
     pattern:  /{id}.{_format}
     defaults:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:detail"
@@ -32,8 +24,9 @@ fsb_imaginarium_api_furniture_get:
     requirements:
         _method: get
         _format: json|xml
+        id: \d+
 
-fsb_imaginarium_api_furniture_update:
+fsb_streetmarket_api_furniture_update:
     pattern:  /{id}/update.{_format}
     defaults:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:update"
@@ -41,8 +34,17 @@ fsb_imaginarium_api_furniture_update:
     requirements:
         _method: put
         _format: json|xml
+        id: \d+
 
-fsb_imaginarium_api_furniture_delete:
+fsb_streetmarket_api_furniture_upload:
+    pattern:  /{id}/upload
+    defaults:
+        _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:upload"
+    requirements:
+        _method: put
+        id: \d+
+
+fsb_streetmarket_api_furniture_delete:
     pattern:  /{id}/delete.{_format}
     defaults:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:delete"
@@ -50,3 +52,4 @@ fsb_imaginarium_api_furniture_delete:
     requirements:
         _method: delete
         _format: json|xml
+        id: \d+

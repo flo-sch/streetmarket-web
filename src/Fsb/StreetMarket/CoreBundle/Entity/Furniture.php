@@ -95,7 +95,13 @@ class Furniture
     private $picturePath;
 
     /**
-     * @Assert\File(maxSize="6291456")
+     * @Assert\Image(
+     *     maxSize="6291456",
+     *     minWidth = 200,
+     *     maxWidth = 6000,
+     *     minHeight = 200,
+     *     maxHeight = 6000
+     * )
      * @Assert\NotBlank()
      */
     private $picture;
