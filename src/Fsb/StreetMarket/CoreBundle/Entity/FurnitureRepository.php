@@ -3,6 +3,7 @@
 namespace Fsb\StreetMarket\CoreBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NoResultException;
 
 /**
  * FurnitureRepository
@@ -55,5 +56,28 @@ class FurnitureRepository extends EntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function findOneActive($id)
+    {
+        $furniture = null;
+
+        $qb = $this->_em->createQueryBuilder();
+
+        $qb->select('f')
+            ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
+            ->where($qb->expr()->isNotNull('f.removedAt'))
+            ->andWhere($qb->expr()->eq('f.isHidden', ':isHidden'))
+            ->andWhere($qb->expr()->eq('f.id', ':id'))
+            ->setParameter('isHidden', false)
+            ->setParameter('id', $id)
+        ;
+
+        try {
+            $furniture = $qb->getQuery()->getSingleResult();
+        }
+        catch (NoResultException $NRE) {}
+
+        return $furniture;
     }
 }

@@ -221,7 +221,7 @@ class FurnitureController extends RestController
         if ($furniture) {
             $data['furniture'] = $furniture;
         } else {
-            $status = 404;
+            $statusCode = 404;
             $success = false;
             $data['message'] = 'This furniture does not exists';
         }
@@ -341,7 +341,7 @@ class FurnitureController extends RestController
 
             $data['furniture'] = $furniture;
         } else {
-            $status = 404;
+            $statusCode = 404;
             $success = false;
             $data['message'] = 'This furniture does not exists';
         }
@@ -395,7 +395,7 @@ class FurnitureController extends RestController
             $em->persist($furniture);
             $em->flush();
         } else {
-            $status = 404;
+            $statusCode = 404;
             $success = false;
             $data['message'] = 'This furniture does not exists';
         }
