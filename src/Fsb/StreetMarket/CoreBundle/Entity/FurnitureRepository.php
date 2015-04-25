@@ -58,6 +58,27 @@ class FurnitureRepository extends EntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function findOne($id)
+    {
+        $furniture = null;
+
+        $qb = $this->_em->createQueryBuilder();
+
+        $qb->select('f')
+            ->from('FsbStreetMarketCoreBundle:Furniture', 'f')
+            ->where($qb->expr()->isNull('f.removedAt'))
+            ->andWhere($qb->expr()->eq('f.id', ':id'))
+            ->setParameter('id', $id)
+        ;
+
+        try {
+            $furniture = $qb->getQuery()->getSingleResult();
+        }
+        catch (NoResultException $NRE) {}
+
+        return $furniture;
+    }
+
     public function findOneActive($id)
     {
         $furniture = null;

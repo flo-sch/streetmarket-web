@@ -434,7 +434,7 @@ class FurnitureController extends RestController
 
         $request = $this->getRequest();
         $em = $this->getDoctrine()->getManager();
-        $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
+        $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOne($id);
 
         if ($furniture) {
             if ($request->files->has('picture')) {
