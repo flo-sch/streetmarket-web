@@ -438,11 +438,11 @@ class FurnitureController extends RestController
 
         if ($furniture) {
             $picture = $request->files->get('picture');
-            exit(var_dump($picture, $request->files->all()));
             // TODO Check picture dimensions and size...
 
             try {
                 $furniture->setPicture($picture);
+                $furniture->setIsHidden(false);
 
                 $em->persist($furniture);
                 $em->flush();
