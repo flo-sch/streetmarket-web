@@ -40,7 +40,7 @@ class FurnitureController extends RestController
         $em = $this->getDoctrine()->getManager();
         $furnitures = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findAllLatestActive();
 
-        $lastFurniture = end($furnitures);
+        $lastFurniture = current($furnitures);
 
         if ($lastFurniture) {
             $lastModificationDate = $lastFurniture->getTookAt();
