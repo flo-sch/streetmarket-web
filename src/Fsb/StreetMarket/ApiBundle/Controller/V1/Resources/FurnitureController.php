@@ -406,7 +406,7 @@ class FurnitureController extends RestController
      *             "name"="id",
      *             "dataType"="integer",
      *             "requirement"="\d+",
-     *             "description"="ID of the furnituree"
+     *             "description"="ID of the furniture"
      *         }
      *     },
      *     parameters={
@@ -414,13 +414,13 @@ class FurnitureController extends RestController
      *             "name"="id",
      *             "dataType"="integer",
      *             "required"=true,
-     *             "description"="ID of the furnituree"
+     *             "description"="ID of the furniture"
      *         },
      *         {
-     *             "name"="id",
-     *             "dataType"="integer",
+     *             "name"="picture",
+     *             "dataType"="file",
      *             "required"=true,
-     *             "description"="ID of the furnituree"
+     *             "description"="Picture of the furniture to upload"
      *         }
      *     },
      *     output="array"
@@ -437,28 +437,37 @@ class FurnitureController extends RestController
         $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
 
         if ($furniture) {
-            $picture = $request->files->get('picture');
-            // TODO Check picture dimensions and size...
+            if ($request->files->has('picture')) {
+                $picture = $request->files->get('picture');
 
-            try {
-                $furniture->setPicture($picture);
-                $furniture->setIsHidden(false);
+                // TODO
+                // Control picture dimensions, format and size...
 
-                $em->persist($furniture);
-                $em->flush();
+                try {
+                    $furniture->setPicture($picture);
+                    $furniture->setIsHidden(false);
 
-                if ($_format === 'xml') {
-                    $data = $furniture;
-                } else {
-                    $data['furniture'] = $furniture;
+                    $em->persist($furniture);
+                    $em->flush();
+
+                    if ($_format === 'xml') {
+                        $data = $furniture;
+                    } else {
+                        $data['furniture'] = $furniture;
+                    }
                 }
-            }
-            catch (ORMException $ORME) {
-                $this->get('logger')->error($ORME->getMessage());
+                catch (ORMException $ORME) {
+                    $this->get('logger')->error($ORME->getMessage());
 
-                $statusCode = 500;
+                    $statusCode = 500;
+                    $success = false;
+                    $data['message'] = 'An error has occured. Please try again later.';
+                }
+            } else {
+                $statusCode = 400;
                 $success = false;
-                $data['message'] = 'An error has occured. Please try again later.';
+                $data['errors'][] = 'Undefined file: picture.';
+                $data['message'] = 'Bad request: unvalid parameters..';
             }
         } else {
             $statusCode = 404;
@@ -485,7 +494,7 @@ class FurnitureController extends RestController
      *             "name"="id",
      *             "dataType"="integer",
      *             "requirement"="\d+",
-     *             "description"="ID of the furnituree"
+     *             "description"="ID of the furniture"
      *         }
      *     },
      *     parameters={
@@ -493,7 +502,7 @@ class FurnitureController extends RestController
      *             "name"="id",
      *             "dataType"="integer",
      *             "required"=true,
-     *             "description"="ID of the furnituree"
+     *             "description"="ID of the furniture"
      *         }
      *     },
      *     output="array"
