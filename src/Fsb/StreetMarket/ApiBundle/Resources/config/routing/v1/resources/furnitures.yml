@@ -42,7 +42,7 @@ fsb_streetmarket_api_furniture_upload:
         _controller: "FsbStreetMarketApiBundle:V1/Resources/Furniture:upload"
         _format: json
     requirements:
-        _method: put
+        _method: post
         _format: json|xml
         id: \d+
 

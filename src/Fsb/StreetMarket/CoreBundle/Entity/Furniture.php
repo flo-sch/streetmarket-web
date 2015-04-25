@@ -14,6 +14,7 @@ use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
 use JMS\Serializer\Annotation\Groups;
 use JMS\Serializer\Annotation\SerializedName;
+use JMS\Serializer\Annotation\Accessor;
 use JMS\Serializer\Annotation\XmlRoot;
 
 /**
@@ -125,6 +126,8 @@ class Furniture implements Serializable
      *
      * @Expose()
      * @Groups({"list", "detail", "full"})
+     * @SerializedName("picture")
+     * @Accessor(getter="getPictureWebPath", setter="setPicturePath")
      */
     private $picturePath;
 
@@ -429,7 +432,7 @@ class Furniture implements Serializable
      *
      * @return string
      */
-    public function getAbsolutePath()
+    public function getPictureAbsolutePath()
     {
         return is_null($this->getPicturePath()) ? null : $this->getUploadRootDir() . '/' . $this->getPicturePath();
     }
@@ -439,7 +442,7 @@ class Furniture implements Serializable
      *
      * @return string
      */
-    public function getWebPath()
+    public function getPictureWebPath()
     {
         return is_null($this->getPicturePath()) ? null : $this->getUploadDir() . '/' . $this->getPicturePath();
     }
@@ -510,7 +513,7 @@ class Furniture implements Serializable
      */
     public function removeUpload()
     {
-        $picture = $this->getAbsolutePath();
+        $picture = $this->getPictureAbsolutePath();
 
         if ($picture) {
             unlink($picture);

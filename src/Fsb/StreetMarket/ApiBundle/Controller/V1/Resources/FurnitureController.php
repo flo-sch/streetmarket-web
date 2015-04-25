@@ -379,11 +379,13 @@ class FurnitureController extends RestController
                 $this->get('logger')->error($ORME->getMessage());
 
                 $statusCode = 500;
+                $success = false;
                 $data['message'] = 'An error has occured. Please try again later.';
             }
         } else {
             $statusCode = 404;
-            $data['message'] = 'Bad request: unvalid parameters.';
+            $success = false;
+            $data['message'] = 'This furniture does not exists.';
         }
 
         return $this->generateResponse($data, $statusCode, $success, $_format, array('detail'));
@@ -413,6 +415,12 @@ class FurnitureController extends RestController
      *             "dataType"="integer",
      *             "required"=true,
      *             "description"="ID of the furnituree"
+     *         },
+     *         {
+     *             "name"="id",
+     *             "dataType"="integer",
+     *             "required"=true,
+     *             "description"="ID of the furnituree"
      *         }
      *     },
      *     output="array"
@@ -420,14 +428,45 @@ class FurnitureController extends RestController
      */
     public function uploadAction($id, $_format)
     {
-        $statusCode = 501;
-        $success = false;
-        $data = array(
-            'message' => 'This method is not yet implemented.'
-        );
+        $statusCode = 200;
+        $success = true;
+        $data = array();
 
-        // TODO
-        return $this->generateResponse($data, $statusCode, $success, $_format);
+        $request = $this->getRequest();
+        $em = $this->getDoctrine()->getManager();
+        $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
+
+        if ($furniture) {
+            $picture = $request->files->get('picture');
+            exit(var_dump($picture, $request->files->all()));
+            // TODO Check picture dimensions and size...
+
+            try {
+                $furniture->setPicture($picture);
+
+                $em->persist($furniture);
+                $em->flush();
+
+                if ($_format === 'xml') {
+                    $data = $furniture;
+                } else {
+                    $data['furniture'] = $furniture;
+                }
+            }
+            catch (ORMException $ORME) {
+                $this->get('logger')->error($ORME->getMessage());
+
+                $statusCode = 500;
+                $success = false;
+                $data['message'] = 'An error has occured. Please try again later.';
+            }
+        } else {
+            $statusCode = 404;
+            $success = false;
+            $data['message'] = 'This furniture does not exists.';
+        }
+
+        return $this->generateResponse($data, $statusCode, $success, $_format, array('detail'));
     }
 
     /**
@@ -491,7 +530,7 @@ class FurnitureController extends RestController
         } else {
             $statusCode = 404;
             $success = false;
-            $data['message'] = 'This furniture does not exists';
+            $data['message'] = 'This furniture does not exists.';
         }
 
         return $this->generateResponse($data, $statusCode, $success, $_format, array('detail'));
