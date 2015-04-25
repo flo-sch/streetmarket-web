@@ -19,7 +19,8 @@
         "sensio/framework-extra-bundle": "~3.0",
         "incenteev/composer-parameter-handler": "~2.0",
         "jms/serializer-bundle": "0.13.*@dev",
-        "nelmio/api-doc-bundle": "2.7.*@dev"
+        "nelmio/api-doc-bundle": "2.7.*@dev",
+        "willdurand/hateoas-bundle": "0.5.*"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"
