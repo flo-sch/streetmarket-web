@@ -10,12 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-use JMS\Serializer\Annotation\ExclusionPolicy;
-use JMS\Serializer\Annotation\Expose;
-use JMS\Serializer\Annotation\Groups;
-use JMS\Serializer\Annotation\SerializedName;
-use JMS\Serializer\Annotation\Accessor;
-use JMS\Serializer\Annotation\XmlRoot;
+use JMS\Serializer\Annotation as Serializer;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 /**
  * Furniture
@@ -24,8 +20,19 @@ use JMS\Serializer\Annotation\XmlRoot;
  * @ORM\Entity(repositoryClass="Fsb\StreetMarket\CoreBundle\Entity\FurnitureRepository")
  * @ORM\HasLifecycleCallbacks()
  *
- * @ExclusionPolicy("all")
- * @XmlRoot("furniture")
+ * @Serializer\ExclusionPolicy("all")
+ * @Serializer\XmlRoot("furniture")
+ * @Hateoas\Relation(
+ *      "get",
+ *      href = @Hateoas\Route(
+ *          "fsb_streetmarket_api_furniture_get",
+ *          parameters = {
+ *              "id" = "expr(object.getId())"
+ *          },
+ *          absolute = true
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups = {"list", "detail"})
+ * )
  */
 class Furniture implements Serializable
 {
@@ -36,8 +43,7 @@ class Furniture implements Serializable
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $id;
 
@@ -46,8 +52,8 @@ class Furniture implements Serializable
      *
      * @ORM\Column(name="created_at", type="datetime")
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $createdAt;
 
@@ -56,8 +62,8 @@ class Furniture implements Serializable
      *
      * @ORM\Column(name="updated_at", type="datetime")
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $updatedAt;
 
@@ -80,8 +86,8 @@ class Furniture implements Serializable
      *
      * @ORM\Column(name="title", type="string", length=255)
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $title;
 
@@ -91,8 +97,8 @@ class Furniture implements Serializable
      * @ORM\Column(name="took_at", type="datetime")
      * @Assert\NotNull()
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $tookAt;
 
@@ -102,8 +108,8 @@ class Furniture implements Serializable
      * @ORM\Column(name="latitude", type="decimal", precision=10, scale=7)
      * @Assert\NotNull()
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $latitude;
 
@@ -113,8 +119,8 @@ class Furniture implements Serializable
      * @ORM\Column(name="longitude", type="decimal", precision=10, scale=7)
      * @Assert\NotNull()
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
      */
     private $longitude;
 
@@ -124,10 +130,10 @@ class Furniture implements Serializable
      * @ORM\Column(name="picture_path", type="string", length=255, nullable=true)
      * @Assert\NotBlank()
      *
-     * @Expose()
-     * @Groups({"list", "detail", "full"})
-     * @SerializedName("picture")
-     * @Accessor(getter="getPictureWebPath", setter="setPicturePath")
+     * @Serializer\Expose()
+     * @Serializer\Groups({"list", "detail", "full"})
+     * @Serializer\SerializedName("picture")
+     * @Serializer\Accessor(getter="getPictureWebPath", setter="setPicturePath")
      */
     private $picturePath;
 
