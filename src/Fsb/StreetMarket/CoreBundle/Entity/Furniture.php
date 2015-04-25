@@ -43,6 +43,7 @@ class Furniture implements Serializable
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      *
+     * @Serializer\Expose()
      * @Serializer\Groups({"list", "detail", "full"})
      */
     private $id;
