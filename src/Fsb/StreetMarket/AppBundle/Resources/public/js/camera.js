@@ -94,6 +94,7 @@ var UserCameraReflector = Vue.extend({
 
 var UserCamera = Vue.extend({
   replace: true,
+  inherit: true,
   template: '#user-camera-template',
   events: {
     'renderer:video:ready': function (video) {
@@ -124,11 +125,40 @@ var FurnituresList = Vue.extend({
   template: '#furnitures-list-template'
 });
 
+var Alert = Vue.extend({
+  template: '#alert-template',
+  events: {
+    'app:flash:display': function (level, message, abc) {
+      this.level = level;
+      this.message = message;
+      this.dismissable = abc;
+      this.display = true;
+    }
+  },
+  data: function () {
+    return {
+      display: false,
+      dismissable: true,
+      level: '',
+      message: ''
+    }
+  },
+  methods: {
+    dismiss: function (event) {
+      if (event) {
+        event.preventDefault();
+      }
+
+      this.display = false;
+    }
+  }
+});
+
 var Camera = new Vue({
   el: 'body',
   data: {
     view: 'furnitures',
-    isReady: false,
+    isLocated: false,
     isRecording: false,
     position: null,
     furnitures: []
@@ -137,28 +167,20 @@ var Camera = new Vue({
   ready: function () {
     this.$options.ApiClient = new StreetMarketClient(window.location.origin);
 
-    var Camera = this;
-
     this.$options.ApiClient.list(function (success, response, status) {
       if (success && response.success) {
-        this.furnitures = response.furnitures;
+        response.furnitures.forEach(function (furniture) {
+          this.furnitures.push(this.parseFurniture(furniture));
+        }, this);
       }
     }, this);
-
-    navigator.geolocation.getCurrentPosition(function (position) {
-      Camera.isReady = true;
-
-      Camera.position = position;
-    }, function () {
-      alert('This application requires to know your current location.');
-    });
   },
   events: {
     'browser:getUserMedia:unsupported': function () {
-      console.error('Sorry, the browser you are using doesn\'t support getUserMedia');
+      this.displayAlert('danger', 'Sorry, the browser you are using doesn\'t support getUserMedia', false);
     },
     'browser:getUserMedia:error': function (error) {
-      console.error(error);
+      this.displayAlert('danger', error.name, true);
     },
     'renderer:video:ready': function () {
       this.isRecording = true;
@@ -168,13 +190,21 @@ var Camera = new Vue({
 
       // NOW the picture has been correctly uploaded,
       // Provide a visual feedback [Flash message ?]
-      this.furnitures.unshift(furniture);
+      this.furnitures.unshift(this.parseFurniture(furniture));
+      this.displayAlert('success', 'Amazing! The community thanks you a lot!', true);
     },
     'app:api:error': function (response, status) {
-      console.error('API error', response, status);
+      this.displayAlert('danger', 'Oh snap! ' + response.message, true);
+    },
+    'app:geolocation:found': function () {
+      this.displayAlert('success', 'Nice! We just located you :)', true);
+    },
+    'app:geolocation:canceled': function () {
+      this.displayAlert('warning', 'Sorry, but we need to know where the pictures are taken...', false);
     },
     'reflector:picture:taken': function (data) {
       // Now we have the picture data as base64 image/png.
+      this.displayAlert('info', 'Thanks! We are currently uploading the picture...', true);
 
       // Conversion to blob to reduce the data size
       // A base64 string is heavier to send than a blob
@@ -224,14 +254,20 @@ var Camera = new Vue({
   components: {
     'camera': UserCamera,
     'furnitures': FurnituresList,
+    'alert': Alert
   },
   methods: {
+    setView: function (view) {
+      this.view = view;
+    },
     record: function (event) {
       if (event) {
         event.preventDefault();
       }
 
-      this.view = 'camera';
+      this.definePosition();
+      this.setView('camera');
+
       this.$broadcast('app:record:on');
     },
     stopRecording: function (event) {
@@ -239,7 +275,8 @@ var Camera = new Vue({
         event.preventDefault();
       }
 
-      this.view = 'furnitures';
+      this.setView('furnitures');
+
       this.isRecording = false;
       this.$broadcast('app:record:off');
     },
@@ -249,6 +286,29 @@ var Camera = new Vue({
       }
 
       this.$broadcast('app:take-picture');
+    },
+    definePosition: function () {
+      var Camera = this;
+
+      navigator.geolocation.getCurrentPosition(function (position) {
+        Camera.isLocated = true;
+        Camera.position = position;
+
+        Camera.$emit('app:geolocation:found');
+      }, function (error) {
+        Camera.$emit('app:geolocation:canceled', error);
+      });
+    },
+    displayAlert: function (level, message, dismissable) {
+      this.$broadcast('app:flash:display', level, message, dismissable);
+    },
+    parseFurniture: function (furniture) {
+      return {
+        id: furniture.id,
+        title: furniture.title,
+        tookAt: moment(furniture.took_at).fromNow(),
+        picture: furniture.picture
+      }
     }
   }
 });

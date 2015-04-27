@@ -48,8 +48,26 @@ html {
             height: 100%;
             background-color: black;
         }
-        #take-picture-button {
+        .navbar-center {
+            text-align: center;
+            .navbar-text {
+                float: none;
+            }
+        }
+        .btn-aligned {
             margin: 8px;
+        }
+        #alert-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 90%;
+            margin: 0 5%;
+            z-index: 999;
+            .alert {
+                margin: 0;
+                border-radius: 0;
+            }
         }
     }
 }

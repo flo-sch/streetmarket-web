@@ -11,10 +11,8 @@
 {% endblock %}
 
 {% block app_container %}
-    <section v-component='{% raw %}{{ view }}{% endraw %}' v-ref='View'></section>
-    <nav v-if='isRecording' class='navbar navbar-fixed-bottom navbar-default text-center'>
-        <a class='btn btn-md btn-info' id='take-picture-button' href='#take-picture' v-on='click: takePicture'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
-    </nav>
+    <section id='alert-container' v-component='alert' v-ref='Alert'></section>
+    <main v-component='{% raw %}{{ view }}{% endraw %}' v-ref='View'></main>
     {% raw %}
         <script id='furnitures-list-template' type='text/template'>
             <section class='furnitures container'>
@@ -23,6 +21,7 @@
                     <article class='furniture col-xs-6 col-sm-4 col-md-3' v-repeat='furniture: furnitures'>
                         <img class='furniture-picture img-responsive' v-attr='src: "/" + furniture.picture' alt='{{ furniture.title }}' />
                         <h4 class='furniture-title'>{{ furniture.title }}</h4>
+                        <p class='furniture-date'>{{ furniture.tookAt }}</p>
                     </article>
                 </div>
             </section>
@@ -32,12 +31,22 @@
                 <camera-renderer v-ref='Renderer'></camera-renderer>
                 <camera-reflector v-ref='Reflector'></camera-reflector>
             </section>
+            <nav class='navbar navbar-fixed-bottom navbar-default navbar-center'>
+                <a class='btn btn-md btn-info btn-aligned' href='#take-picture' v-on='click: takePicture' v-if='isLocated && isRecording'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
+                <p class='navbar-text text-muted' v-if='!isLocated'><span class='glyphicon glyphicon-map-marker' aria-hidden='true'></span> Looking for your location...</p>
+            </nav>
         </script>
         <script id='user-camera-renderer-template' type='text/template'>
             <video class='fullscreen' v-on='canplay: onSourceReady'>Your browser does not support this application :(</video>
         </script>
         <script id='user-camera-reflector-template' type='text/template'>
             <canvas class='background-read-only' resize='true'></canvas>
+        </script>
+        <script id='alert-template' type='text/template'>
+            <div class='alert' role='alert' v-if='display' v-class='"alert-" + level, alert-dismissable: dismissable'>
+                <a href='#close' type='button' class='close' aria-label='Close' v-if='dismissable' v-on='click: dismiss'><span aria-hidden='true'>&times;</span></a>
+                <p>{{ message }}</p>
+            </div>
         </script>
     {% endraw %}
 {% endblock %}

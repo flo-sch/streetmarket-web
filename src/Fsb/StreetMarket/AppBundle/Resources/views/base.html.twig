@@ -10,7 +10,7 @@
             <div class='navbar-header'>
                 <a class='navbar-brand' href='{{ path('fsb_street_market_app_homepage') }}'>StreetMarket</a>
                 <ul id='camera-links' class='nav navbar-nav navbar-right pull-right'>
-                    <li v-if='!isRecording && isReady'><a id='record-button' href='#record' v-on='click: record'>Camera</a></li>
+                    <li v-if='!isRecording'><a id='record-button' href='#record' v-on='click: record'>Camera</a></li>
                     <li v-if='isRecording'><a id='stop-button' href='#stop' v-on='click: stopRecording'>Stop</a></li>
                 </ul>
             </div>
