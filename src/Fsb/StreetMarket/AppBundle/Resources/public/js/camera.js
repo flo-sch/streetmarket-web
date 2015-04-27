@@ -299,8 +299,7 @@ var Camera = new Vue({
       }, function (error) {
         Camera.$emit('app:geolocation:canceled', error);
       }, {
-        enableHighAccuracy: true,
-        timeout: 15000
+        enableHighAccuracy: true
       });
     },
     displayAlert: function (level, message, dismissable) {
