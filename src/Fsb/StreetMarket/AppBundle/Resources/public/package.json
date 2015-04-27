@@ -1,0 +1,15 @@
+{
+  "name": "streetmarket-web-app",
+  "version": "0.0.1",
+  "description": "StreetMarket WebApp version",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Florent Schildknecht <florent.schildknecht@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bower": "^1.4.1",
+    "gulp": "^3.8.11"
+  }
+}

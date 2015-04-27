@@ -1,0 +1,21 @@
+{
+  "name": "streetmarket-web-app",
+  "version": "0.0.1",
+  "description": "StreetMarket WebApp version",
+  "homepage": "http://streetmarket.florentschildknecht.com/",
+  "authors": [
+    "Schildknecht Florent <florent.schildknecht@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.3",
+    "vue": "~0.11.8"
+  }
+}

@@ -1,5 +1,39 @@
 {% extends 'FsbStreetMarketAppBundle:Pages:app.html.twig' %}
 
-{% block body %}
-    <h1>StreetMarket</h1>
+{% block stylesheets %}
+    {% stylesheets
+        '@FsbStreetMarketAppBundle/Resources/public/sass/camera.scss'
+        filter='scss'
+        output='css/home.css'
+        debug=true %}
+        <link rel='stylesheet' href='{{ asset_url }}' />
+    {% endstylesheets %}
+{% endblock %}
+
+{% block app_container %}
+    <section v-component='{% raw %}{{ view }}{% endraw %}' v-ref='View'></section>
+    <nav v-if='isRecording' class='navbar navbar-fixed-bottom navbar-default text-center'>
+        <a class='btn btn-md btn-info' id='take-picture-button' href='#take-picture' v-on='click: takePicture'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
+    </nav>
+    <script id='user-camera-template' type='text/template'>
+        <section id='camera' v-class='visible: isRecording'>
+            <camera-renderer v-ref='Renderer'></camera-renderer>
+            <camera-reflector v-ref='Reflector'></camera-reflector>
+        </section>
+    </script>
+    <script id='user-camera-renderer-template' type='text/template'>
+        <video class='fullscreen' v-on='canplay: onSourceReady'>Your browser does not support this application :(</video>
+    </script>
+    <script id='user-camera-reflector-template' type='text/template'>
+        <canvas class='background-read-only' resize='true'></canvas>
+    </script>
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/vue/dist/vue.js'
+        '@FsbStreetMarketAppBundle/Resources/public/js/camera.js'
+        output='js/home.js' %}
+        <script src='{{ asset_url }}'></script>
+    {% endjavascripts %}
 {% endblock %}
