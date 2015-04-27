@@ -1,4 +1,5 @@
 navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || function () {});
+navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || function () {});
 
 Vue.config.debug = true;
 
@@ -297,6 +298,9 @@ var Camera = new Vue({
         Camera.$emit('app:geolocation:found');
       }, function (error) {
         Camera.$emit('app:geolocation:canceled', error);
+      }, {
+        enableHighAccuracy: true,
+        timeout: 15000
       });
     },
     displayAlert: function (level, message, dismissable) {
