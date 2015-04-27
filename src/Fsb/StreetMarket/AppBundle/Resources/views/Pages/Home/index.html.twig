@@ -3,9 +3,7 @@
 {% block stylesheets %}
     {% stylesheets
         '@FsbStreetMarketAppBundle/Resources/public/sass/camera.scss'
-        filter='scss'
-        output='css/home.css'
-        debug=true %}
+        filter='scss' output='css/home.css' %}
         <link rel='stylesheet' href='{{ asset_url }}' />
     {% endstylesheets %}
 {% endblock %}
@@ -43,7 +41,7 @@
             <canvas class='background-read-only' resize='true'></canvas>
         </script>
         <script id='alert-template' type='text/template'>
-            <div class='alert' role='alert' v-if='display' v-class='"alert-" + level, alert-dismissable: dismissable'>
+            <div class='alert' role='alert' v-if='display' v-class='"alert-" + level, alert-dismissable: dismissable' v-transition='fade'>
                 <a href='#close' type='button' class='close' aria-label='Close' v-if='dismissable' v-on='click: dismiss'><span aria-hidden='true'>&times;</span></a>
                 <p>{{ message }}</p>
             </div>
