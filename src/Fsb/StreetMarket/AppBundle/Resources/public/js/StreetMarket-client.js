@@ -116,7 +116,6 @@ function StreetMarketClient (baseUrl) {
 
 			var request = new Request(_routes.upload.replace('{id}', id), 'POST', {
 				data: formData,
-				type: 'multipart/form-data; charset=utf-8; boundary=' + Math.random().toString().substr(2),
 				successCallback: function (response, status) {
 					callback.apply(scope, [true, JSON.parse(response), status]);
 				},
@@ -148,7 +147,7 @@ function StreetMarketClient (baseUrl) {
 
 			for (var i = 0; i < fields.length; i++) {
 				var field = fields[i];
-				
+
 				if (field in data) {
 					formattedData[field] = data[field];
 				}
@@ -178,7 +177,8 @@ function StreetMarketClient (baseUrl) {
 
 			var request = new Request(_routes.delete.replace('{id}', id), 'DELETE', {
 				successCallback: function (response, status) {
-					callback.apply(scope, [true, JSON.parse(response), status]);
+					// Response should be 204 -- without content
+					callback.apply(scope, [true, null, status]);
 				},
 				errorCallback: function (response, status) {
 					callback.apply(scope, [false, JSON.parse(response), status]);

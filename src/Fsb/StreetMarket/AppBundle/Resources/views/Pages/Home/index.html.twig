@@ -15,18 +15,31 @@
     <nav v-if='isRecording' class='navbar navbar-fixed-bottom navbar-default text-center'>
         <a class='btn btn-md btn-info' id='take-picture-button' href='#take-picture' v-on='click: takePicture'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
     </nav>
-    <script id='user-camera-template' type='text/template'>
-        <section id='camera' v-class='visible: isRecording'>
-            <camera-renderer v-ref='Renderer'></camera-renderer>
-            <camera-reflector v-ref='Reflector'></camera-reflector>
-        </section>
-    </script>
-    <script id='user-camera-renderer-template' type='text/template'>
-        <video class='fullscreen' v-on='canplay: onSourceReady'>Your browser does not support this application :(</video>
-    </script>
-    <script id='user-camera-reflector-template' type='text/template'>
-        <canvas class='background-read-only' resize='true'></canvas>
-    </script>
+    {% raw %}
+        <script id='furnitures-list-template' type='text/template'>
+            <section class='furnitures container'>
+                <h1>Bons plans gratuits :)</h1>
+                <div class='row'>
+                    <article class='furniture col-xs-6 col-sm-4 col-md-3' v-repeat='furniture: furnitures'>
+                        <img class='furniture-picture img-responsive' v-attr='src: "/" + furniture.picture' alt='{{ furniture.title }}' />
+                        <h4 class='furniture-title'>{{ furniture.title }}</h4>
+                    </article>
+                </div>
+            </section>
+        </script>
+        <script id='user-camera-template' type='text/template'>
+            <section class='camera'>
+                <camera-renderer v-ref='Renderer'></camera-renderer>
+                <camera-reflector v-ref='Reflector'></camera-reflector>
+            </section>
+        </script>
+        <script id='user-camera-renderer-template' type='text/template'>
+            <video class='fullscreen' v-on='canplay: onSourceReady'>Your browser does not support this application :(</video>
+        </script>
+        <script id='user-camera-reflector-template' type='text/template'>
+            <canvas class='background-read-only' resize='true'></canvas>
+        </script>
+    {% endraw %}
 {% endblock %}
 
 {% block javascripts %}

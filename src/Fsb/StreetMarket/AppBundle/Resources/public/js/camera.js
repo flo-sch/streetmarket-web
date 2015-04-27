@@ -106,19 +106,44 @@ var UserCamera = Vue.extend({
   }
 });
 
+// var Furniture = Vue.extend({
+//   replace: true,
+//   template: '#furniture-template',
+//   data: function () {
+//     return {
+//       title: null,
+//       tookAt: null,
+//       picturePath: null
+//     }
+//   }
+// });
+
+var FurnituresList = Vue.extend({
+  replace: true,
+  inherit: true,
+  template: '#furnitures-list-template'
+});
+
 var Camera = new Vue({
   el: 'body',
   data: {
-    view: 'camera',
+    view: 'furnitures',
     isReady: false,
     isRecording: false,
-    position: null
+    position: null,
+    furnitures: []
   },
   ApiClient: null,
   ready: function () {
     this.$options.ApiClient = new StreetMarketClient(window.location.origin);
 
     var Camera = this;
+
+    this.$options.ApiClient.list(function (success, response, status) {
+      if (success && response.success) {
+        this.furnitures = response.furnitures;
+      }
+    }, this);
 
     navigator.geolocation.getCurrentPosition(function (position) {
       Camera.isReady = true;
@@ -138,10 +163,21 @@ var Camera = new Vue({
     'renderer:video:ready': function () {
       this.isRecording = true;
     },
+    'app:api:uploaded': function (furniture) {
+      this.stopRecording();
+
+      // NOW the picture has been correctly uploaded,
+      // Provide a visual feedback [Flash message ?]
+      this.furnitures.unshift(furniture);
+    },
+    'app:api:error': function (response, status) {
+      console.error('API error', response, status);
+    },
     'reflector:picture:taken': function (data) {
-      console.log('Picture taken', data.length, data, this.position, this.$options.ApiClient);
       // Now we have the picture data as base64 image/png.
 
+      // Conversion to blob to reduce the data size
+      // A base64 string is heavier to send than a blob
       var characters = atob(data.split(',')[1]);
       var chunkSize = 512;
       var bytes = [];
@@ -150,7 +186,7 @@ var Camera = new Vue({
           var slice = characters.slice(offset, offset + chunkSize);
 
           var byteNumbers = new Array(slice.length);
-          
+
           for (var i = 0; i < slice.length; i++) {
               byteNumbers[i] = slice.charCodeAt(i);
           }
@@ -159,7 +195,7 @@ var Camera = new Vue({
 
           bytes.push(byteArray);
       }
-      
+
       var blob = new Blob(bytes, {
           type: 'image/jpeg'
       });
@@ -169,36 +205,48 @@ var Camera = new Vue({
         latitude: this.position.coords.latitude,
         longitude: this.position.coords.longitude,
       }, function (success, response, status) {
-        console.log('create callback', this, response, success);
-
         if (success && response.success && response.furniture) {
           this.$options.ApiClient.upload(response.furniture.id, {
             picture: blob,
             filename: 'test.jpg'
           }, function (success, response, status) {
-            console.log('upload callback', success, response, status);
+            if (success && response.success) {
+              this.$emit('app:api:uploaded', response.furniture);
+            } else {
+              // Handle an error...
+              this.$emit('app:api:error', response, status);
+            }
           }, this);
         }
       }, this);
     }
   },
   components: {
-    'camera': UserCamera
+    'camera': UserCamera,
+    'furnitures': FurnituresList,
   },
   methods: {
     record: function (event) {
-      event.preventDefault();
+      if (event) {
+        event.preventDefault();
+      }
 
+      this.view = 'camera';
       this.$broadcast('app:record:on');
     },
     stopRecording: function (event) {
-      event.preventDefault();
+      if (event) {
+        event.preventDefault();
+      }
 
+      this.view = 'furnitures';
       this.isRecording = false;
       this.$broadcast('app:record:off');
     },
     takePicture: function (event) {
-      event.preventDefault();
+      if (event) {
+        event.preventDefault();
+      }
 
       this.$broadcast('app:take-picture');
     }

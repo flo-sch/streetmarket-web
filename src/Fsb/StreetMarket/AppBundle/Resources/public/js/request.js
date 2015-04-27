@@ -10,9 +10,9 @@ var Request = function (url, method, settings) {
 
 	this.url = url;
 	this.method = method;
-	this.type = 'text/plain;charset=UTF-8';
-
+	this.type = null;
 	this.data = {};
+
 	this.successCallback = function () {};
 	this.errorCallback = function () {};
 
@@ -27,6 +27,9 @@ var Request = function (url, method, settings) {
 	}
 	if (settings && typeof settings === 'object' && 'type' in settings) {
 		this.type = settings.type;
+	}
+	if (settings && typeof settings === 'object' && 'type' in settings) {
+		this.size = settings.size;
 	}
 }
 
@@ -44,8 +47,7 @@ Request.prototype.send = function (username, password) {
 	}
 
 	xhr.onreadystatechange = function (event) {
-	  if (this.readyState === XMLHttpRequest.DONE) {
-
+		if (this.readyState === XMLHttpRequest.DONE) {
 			if (this.status < 200) {
 				Request.successCallback.apply(Request, [this.responseText, this.status]);
 			} else if (this.status < 300) {
@@ -55,14 +57,12 @@ Request.prototype.send = function (username, password) {
 			} else if (this.status < 500) {
 				Request.errorCallback.apply(Request, [this.responseText, this.status]);
 			}
-	  }
+		}
 	};
 
 	xhr.onerror = function (error) {
 		Request.errorCallback.apply(Request, [this.responseText, this.status]);
 	}
-
-	console.log('xhr send', this.data);
 
 	xhr.send(this.data);
 }

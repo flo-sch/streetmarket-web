@@ -324,7 +324,6 @@ class FurnitureController extends RestController
         $em = $this->getDoctrine()->getManager();
         $furniture = $em->getRepository('FsbStreetMarketCoreBundle:Furniture')->findOneActive($id);
 
-
         if ($furniture) {
             $title          = $request->request->get('title');
 
@@ -523,12 +522,6 @@ class FurnitureController extends RestController
             try {
                 $em->persist($furniture);
                 $em->flush();
-
-                if ($_format === 'xml') {
-                    $data = $furniture;
-                } else {
-                    $data['furniture'] = $furniture;
-                }
             }
             catch (ORMException $ORME) {
                 $this->get('logger')->error($ORME->getMessage());
