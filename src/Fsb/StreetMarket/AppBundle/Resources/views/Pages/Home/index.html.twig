@@ -32,8 +32,14 @@
 {% block javascripts %}
     {% javascripts
         '@FsbStreetMarketAppBundle/Resources/public/bower_components/vue/dist/vue.js'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/moment/min/moment.min.js'
+        '@FsbStreetMarketAppBundle/Resources/public/js/request.js'
+        '@FsbStreetMarketAppBundle/Resources/public/js/StreetMarket-client.js'
         '@FsbStreetMarketAppBundle/Resources/public/js/camera.js'
         output='js/home.js' %}
         <script src='{{ asset_url }}'></script>
     {% endjavascripts %}
+    <script>
+        var ApiClient = new StreetMarketClient(window, window.location.origin);
+    </script>
 {% endblock %}

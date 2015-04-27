@@ -110,7 +110,23 @@ var Camera = new Vue({
   el: 'body',
   data: {
     view: 'camera',
-    isRecording: false
+    isReady: false,
+    isRecording: false,
+    position: null
+  },
+  ApiClient: null,
+  ready: function () {
+    this.$options.ApiClient = new StreetMarketClient(window.location.origin);
+
+    var Camera = this;
+
+    navigator.geolocation.getCurrentPosition(function (position) {
+      Camera.isReady = true;
+
+      Camera.position = position;
+    }, function () {
+      alert('This application requires to know your current location.');
+    });
   },
   events: {
     'browser:getUserMedia:unsupported': function () {
@@ -123,8 +139,47 @@ var Camera = new Vue({
       this.isRecording = true;
     },
     'reflector:picture:taken': function (data) {
-      console.log('Picture taken', data.length, data);
-      // Now we have the picture data as base64 image/png
+      console.log('Picture taken', data.length, data, this.position, this.$options.ApiClient);
+      // Now we have the picture data as base64 image/png.
+
+      var characters = atob(data.split(',')[1]);
+      var chunkSize = 512;
+      var bytes = [];
+
+      for (var offset = 0; offset < characters.length; offset += chunkSize) {
+          var slice = characters.slice(offset, offset + chunkSize);
+
+          var byteNumbers = new Array(slice.length);
+          
+          for (var i = 0; i < slice.length; i++) {
+              byteNumbers[i] = slice.charCodeAt(i);
+          }
+
+          var byteArray = new Uint8Array(byteNumbers);
+
+          bytes.push(byteArray);
+      }
+      
+      var blob = new Blob(bytes, {
+          type: 'image/jpeg'
+      });
+
+      this.$options.ApiClient.create({
+        title: 'TEST',
+        latitude: this.position.coords.latitude,
+        longitude: this.position.coords.longitude,
+      }, function (success, response, status) {
+        console.log('create callback', this, response, success);
+
+        if (success && response.success && response.furniture) {
+          this.$options.ApiClient.upload(response.furniture.id, {
+            picture: blob,
+            filename: 'test.jpg'
+          }, function (success, response, status) {
+            console.log('upload callback', success, response, status);
+          }, this);
+        }
+      }, this);
     }
   },
   components: {
