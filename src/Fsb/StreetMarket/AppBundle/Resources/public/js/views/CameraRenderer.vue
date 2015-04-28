@@ -71,8 +71,13 @@
         if (this.source) {
           constraints = {
             optional: [{
-              sourceId: this.source,
+              sourceId: this.source
+            }, {
               facingMode: 'environment'
+            }, {
+              height: {
+                min: window.innerHeight
+              }
             }]
           };
         }
