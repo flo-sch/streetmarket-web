@@ -78,6 +78,8 @@ var UserCameraRenderer = Vue.extend({
         }, function (stream) {
           renderer.stream = stream;
           renderer.$el.src = window.URL.createObjectURL(stream);
+
+          renderer.$dispatch('test', 'new stream! ' + renderer.$el.src);
           renderer.$el.play();
         }, function (error) {
           renderer.$dispatch('browser:getUserMedia:error', error);
