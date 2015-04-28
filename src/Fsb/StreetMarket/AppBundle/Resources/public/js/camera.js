@@ -59,11 +59,9 @@ var UserCameraRenderer = Vue.extend({
 
       if (this.source) {
         constraints = {
-          video: {
-            optional: [{
-              sourceId: this.source
-            }]
-          }
+          optional: [{
+            sourceId: this.source
+          }]
         };
       }
 
