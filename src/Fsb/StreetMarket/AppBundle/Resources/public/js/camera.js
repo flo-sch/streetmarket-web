@@ -217,6 +217,7 @@ var Camera = new Vue({
     view: 'furnitures',
     isLocated: false,
     isRecording: false,
+    isLookingForSources: false,
     isTaken: false,
     title: 'TEST',
     picture: null,
@@ -397,7 +398,6 @@ var Camera = new Vue({
       }
 
       if (this.sources.length > 0) {
-
         if (this.currentSource >= (this.sources.length - 1)) {
           this.currentSource = 0;
         } else {
@@ -411,19 +411,22 @@ var Camera = new Vue({
     getMediaSources: function () {
       var Camera = this;
 
-      MediaStreamTrack.getSources(function (sources) {
-        var length = sources.length;
+      if (typeof MediaStreamTrack === 'undefined') {
+        this.isLookingForSources = false;
+      } else {
+        this.isLookingForSources = true;
 
-        while (length--) {
-          var source = sources[length];
+        MediaStreamTrack.getSources(function (sources) {
+          sources.forEach(function (source) {
+            if (source.kind === 'video') {
+              Camera.sources.push(source.id);
+            }
+          });
 
-          console.log('source found', source);
-
-          if (source.kind === 'video') {
-            Camera.sources.push(source.id);
-          }
-        }
-      });
+          Camera.isLookingForSources = false;
+        });
+      }
+      
     },
     displayAlert: function (level, message, dismissable) {
       this.$broadcast('app:flash:display', level, message, dismissable);
