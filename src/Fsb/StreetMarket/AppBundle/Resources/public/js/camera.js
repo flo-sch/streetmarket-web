@@ -1,6 +1,8 @@
 navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
 window.URL = (window.URL || window.webkitURL);
 
+Vue.config.debug = true;
+
 var UserCameraRenderer = Vue.extend({
   replace: true,
   template: '#user-camera-renderer-template',
@@ -32,6 +34,7 @@ var UserCameraRenderer = Vue.extend({
       // Stop the video and clear its source
       this.$el.pause();
       this.$el.src = null;
+      // Cancel the current stream
       if (this.stream) {
         this.stream.stop();
         this.stream = null;
@@ -263,6 +266,7 @@ var Camera = new Vue({
       this.displayAlert('danger', 'Oh snap! ' + message, true);
     },
     'app:geolocation:found': function () {
+      this.isLocated = true;
       this.displayAlert('success', 'Nice! We just located you :)', true);
     },
     'app:geolocation:canceled': function () {
@@ -377,7 +381,6 @@ var Camera = new Vue({
       var Camera = this;
 
       navigator.geolocation.getCurrentPosition(function (position) {
-        Camera.isLocated = true;
         Camera.position = position;
 
         Camera.$emit('app:geolocation:found');
