@@ -391,13 +391,17 @@ var Camera = new Vue({
         enableHighAccuracy: true
       });
     },
-    reverseVideo: function () {
+    reverseVideo: function (event) {
+      if (event) {
+        event.preventDefault();
+      }
+
       if (this.sources.length > 0) {
 
         if (this.currentSource >= (this.sources.length - 1)) {
-          this.currentSource++;
-        } else {
           this.currentSource = 0;
+        } else {
+          this.currentSource++;
         }
 
         this.displayAlert('info', 'Current source: [' + this.currentSource + '] with id : ' + this.sources[this.currentSource], true);
