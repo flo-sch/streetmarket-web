@@ -42,7 +42,7 @@
             </nav>
         </script>
         <script id='user-camera-renderer-template' type='text/template'>
-            <video class='fullscreen' v-on='canplay: onSourceReady'>Your browser does not support this application :(</video>
+            <video class='fullscreen' v-on='canplay: onSourceReady' autoplay='true'>Your browser does not support this application :(</video>
         </script>
         <script id='user-camera-reflector-template' type='text/template'>
             <canvas class='background-read-only' resize='true' v-class='visible: visible'></canvas>

@@ -262,6 +262,11 @@ var Camera = new Vue({
       this.picture = data;
     }
   },
+  watch: {
+    sources: function () {
+      this.displayAlert('info', 'sources found : ' + this.sources.length, true);
+    }
+  },
   components: {
     'camera': UserCamera,
     'furnitures': FurnituresList,
