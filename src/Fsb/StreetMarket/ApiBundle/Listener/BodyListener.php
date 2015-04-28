@@ -17,6 +17,12 @@ class BodyListener implements EventSubscriberInterface
         $request = $event->getRequest();
         $method = $request->getMethod();
         $contentType = $request->headers->get('Content-Type');
+        
+        // Parse content-type to remove a potential charset
+        if (strpos($contentType, ';')) {
+            $contentType = explode(';', $contentType)[0];
+        }
+
         $content = $request->getContent();
 
         $data = $this->decodeData($contentType, $content);
