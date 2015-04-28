@@ -11,64 +11,13 @@
 {% block app_container %}
     <section id='alert-container' v-component='alert' v-ref='Alert'></section>
     <main v-component='{% raw %}{{ view }}{% endraw %}' v-ref='View'></main>
-    {% raw %}
-        <script id='furnitures-list-template' type='text/template'>
-            <section class='furnitures container'>
-                <h1>Bons plans gratuits :)</h1>
-                <div class='row'>
-                    <article class='furniture col-xs-6 col-sm-4 col-md-3' v-repeat='furniture: furnitures'>
-                        <img class='furniture-picture img-responsive' v-attr='src: "/" + furniture.picture' alt='{{ furniture.title }}' />
-                        <h4 class='furniture-title'>{{ furniture.title }}</h4>
-                        <p class='furniture-date'>{{ furniture.tookAt }}</p>
-                    </article>
-                </div>
-            </section>
-        </script>
-        <script id='user-camera-template' type='text/template'>
-            <section class='camera'>
-                <camera-renderer v-ref='Renderer'></camera-renderer>
-                <camera-reflector v-ref='Reflector'></camera-reflector>
-            </section>
-            <nav class='navbar navbar-fixed-bottom navbar-default navbar-center'>
-                <p class='navbar-text text-muted' v-if='!isLocated'><span class='glyphicon glyphicon-map-marker' aria-hidden='true'></span> Looking for your location...</p>
-                <a class='btn btn-md btn-info btn-aligned' href='#take-picture' v-on='click: takePicture' v-if='isLocated && isRecording && !isTaken'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
-                <a class='btn btn-md btn-info btn-aligned' href='#record' v-on='click: record' v-if='isTaken'><span class='glyphicon glyphicon-refresh' aria-hidden='true'></span></a>
-                <form class='navbar-form' action='#picture' v-if='isTaken'>
-                    <div class='form-group'>
-                        <input class='form-control' type='text' placeholder='Name' v-model='title' />
-                    </div>
-                </form>
-                <a class='btn btn-md btn-success btn-aligned' href='#validate-picture' v-on='click: validatePicture' v-if='isTaken'><span class='glyphicon glyphicon-check' aria-hidden='true'></span></a>
-            </nav>
-        </script>
-        <script id='user-camera-renderer-template' type='text/template'>
-            <video class='fullscreen' v-on='canplay: onSourceReady' autoplay='true'>Your browser does not support this application :(</video>
-        </script>
-        <script id='user-camera-reflector-template' type='text/template'>
-            <canvas class='background-read-only' resize='true' v-class='visible: visible'></canvas>
-        </script>
-        <script id='alert-template' type='text/template'>
-            <div class='container'>
-                <div class='alert' role='alert' v-if='display' v-class='"alert-" + level, alert-dismissable: dismissable' v-transition='fade'>
-                    <a href='#close' type='button' class='close' aria-label='Close' v-if='dismissable' v-on='click: dismiss'><span aria-hidden='true'>&times;</span></a>
-                    <p>{{ message }}</p>
-                </div>
-            </div>
-        </script>
-    {% endraw %}
 {% endblock %}
 
 {% block javascripts %}
     {% javascripts
-        '@FsbStreetMarketAppBundle/Resources/public/bower_components/vue/dist/vue.js'
-        '@FsbStreetMarketAppBundle/Resources/public/bower_components/moment/min/moment.min.js'
-        '@FsbStreetMarketAppBundle/Resources/public/js/request.js'
-        '@FsbStreetMarketAppBundle/Resources/public/js/StreetMarket-client.js'
-        '@FsbStreetMarketAppBundle/Resources/public/js/camera.js'
+        '@FsbStreetMarketAppBundle/Resources/public/js/polyfills.js'
+        '@FsbStreetMarketAppBundle/Resources/public/js/web-app.js'
         output='js/home.js' %}
         <script src='{{ asset_url }}'></script>
     {% endjavascripts %}
-    <script>
-        var ApiClient = new StreetMarketClient(window, window.location.origin);
-    </script>
 {% endblock %}
