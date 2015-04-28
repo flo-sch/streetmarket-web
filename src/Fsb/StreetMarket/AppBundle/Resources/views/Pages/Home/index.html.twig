@@ -30,7 +30,9 @@
                 <camera-reflector v-ref='Reflector'></camera-reflector>
             </section>
             <nav class='navbar navbar-fixed-bottom navbar-default navbar-center'>
-                <a class='btn btn-md btn-info btn-aligned' href='#take-picture' v-on='click: takePicture' v-if='isLocated && isRecording'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
+                <a class='btn btn-md btn-info btn-aligned' href='#take-picture' v-on='click: takePicture' v-if='isLocated && isRecording && !isTaken'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
+                <a class='btn btn-md btn-info btn-aligned' href='#record' v-on='click: record' v-if='isTaken'><span class='glyphicon glyphicon-refresh' aria-hidden='true'></span></a>
+                <a class='btn btn-md btn-success btn-aligned' href='#validate-picture' v-on='click: validatePicture' v-if='isTaken'><span class='glyphicon glyphicon-check' aria-hidden='true'></span></a>
                 <p class='navbar-text text-muted' v-if='!isLocated'><span class='glyphicon glyphicon-map-marker' aria-hidden='true'></span> Looking for your location...</p>
             </nav>
         </script>
@@ -38,7 +40,7 @@
             <video class='fullscreen' v-on='canplay: onSourceReady'>Your browser does not support this application :(</video>
         </script>
         <script id='user-camera-reflector-template' type='text/template'>
-            <canvas class='background-read-only' resize='true'></canvas>
+            <canvas class='background-read-only' resize='true' v-class='visible: visible'></canvas>
         </script>
         <script id='alert-template' type='text/template'>
             <div class='alert' role='alert' v-if='display' v-class='"alert-" + level, alert-dismissable: dismissable' v-transition='fade'>

@@ -28,7 +28,17 @@ html {
         }
         canvas {
             &.background-read-only {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                max-width: 100%;
+                max-height: 100%;
+                transform: translate3d(-50%, -50%, 0);
                 display: none;
+                &.visible {
+                    display: block;
+                    z-index: 10;
+                }
             }
         }
         #camera-links {
@@ -58,6 +68,7 @@ html {
             }
         }
         .btn-aligned {
+            display: inline-block;
             margin: 8px;
         }
         #alert-container {

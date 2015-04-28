@@ -1,5 +1,4 @@
 navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || function () {});
-navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || function () {});
 
 Vue.config.debug = true;
 
@@ -16,19 +15,26 @@ var UserCameraRenderer = Vue.extend({
     'app:record:on': function () {
       var renderer = this;
 
-      if (navigator.getUserMedia) {
-        navigator.getUserMedia({
-          video: true,
-          audio: false
-        }, function (stream) {
-          renderer.$el.src = window.URL.createObjectURL(stream);
-          renderer.$el.play();
-        }, function (error) {
-          renderer.$dispatch('browser:getUserMedia:error', error);
-        });
+      if (this.$el.src) {
+        this.$el.play();
       } else {
-        renderer.$dispatch('browser:getUserMedia:unsupported');
+        if (navigator.getUserMedia) {
+          navigator.getUserMedia({
+            video: true,
+            audio: false
+          }, function (stream) {
+            renderer.$el.src = window.URL.createObjectURL(stream);
+            renderer.$el.play();
+          }, function (error) {
+            renderer.$dispatch('browser:getUserMedia:error', error);
+          });
+        } else {
+          renderer.$dispatch('browser:getUserMedia:unsupported');
+        }
       }
+    },
+    'app:record:pause': function () {
+      this.$el.pause();
     },
     'app:record:off': function () {
       // Stop the video and clear its source
@@ -52,13 +58,20 @@ var UserCameraReflector = Vue.extend({
   template: '#user-camera-reflector-template',
   data: function () {
     return {
-      source: null
+      source: null,
+      visible: false,
     }
   },
   events: {
     'renderer:video:ready': function (video) {
       this.setSize(video.width, video.height);
       this.source = video.source;
+    },
+    'app:record:pause': function () {
+      this.visible = true;
+    },
+    'app:record:on': function () {
+      this.visible = false;
     },
     'app:take-picture': function (event) {
       this.drawPicture();
@@ -161,6 +174,8 @@ var Camera = new Vue({
     view: 'furnitures',
     isLocated: false,
     isRecording: false,
+    isTaken: false,
+    picture: null,
     position: null,
     furnitures: []
   },
@@ -205,51 +220,9 @@ var Camera = new Vue({
     },
     'reflector:picture:taken': function (data) {
       // Now we have the picture data as base64 image/png.
-      this.displayAlert('info', 'Thanks! We are currently uploading the picture...', true);
-
-      // Conversion to blob to reduce the data size
-      // A base64 string is heavier to send than a blob
-      var characters = atob(data.split(',')[1]);
-      var chunkSize = 512;
-      var bytes = [];
-
-      for (var offset = 0; offset < characters.length; offset += chunkSize) {
-          var slice = characters.slice(offset, offset + chunkSize);
-
-          var byteNumbers = new Array(slice.length);
-
-          for (var i = 0; i < slice.length; i++) {
-              byteNumbers[i] = slice.charCodeAt(i);
-          }
-
-          var byteArray = new Uint8Array(byteNumbers);
-
-          bytes.push(byteArray);
-      }
-
-      var blob = new Blob(bytes, {
-          type: 'image/jpeg'
-      });
-
-      this.$options.ApiClient.create({
-        title: 'TEST',
-        latitude: this.position.coords.latitude,
-        longitude: this.position.coords.longitude,
-      }, function (success, response, status) {
-        if (success && response.success && response.furniture) {
-          this.$options.ApiClient.upload(response.furniture.id, {
-            picture: blob,
-            filename: 'test.jpg'
-          }, function (success, response, status) {
-            if (success && response.success) {
-              this.$emit('app:api:uploaded', response.furniture);
-            } else {
-              // Handle an error...
-              this.$emit('app:api:error', response, status);
-            }
-          }, this);
-        }
-      }, this);
+      this.isTaken = true;
+      this.pauseRecording();
+      this.picture = data;
     }
   },
   components: {
@@ -266,20 +239,27 @@ var Camera = new Vue({
         event.preventDefault();
       }
 
-      this.definePosition();
+      if (this.position === null) {
+        this.definePosition();
+      }
+
       this.setView('camera');
 
+      this.isTaken = false;
       this.$broadcast('app:record:on');
+    },
+    pauseRecording: function () {
+      this.$broadcast('app:record:pause');
     },
     stopRecording: function (event) {
       if (event) {
         event.preventDefault();
       }
 
-      this.setView('furnitures');
-
-      this.isRecording = false;
+      this.pauseRecording();
       this.$broadcast('app:record:off');
+
+      this.setView('furnitures');
     },
     takePicture: function (event) {
       if (event) {
@@ -287,6 +267,58 @@ var Camera = new Vue({
       }
 
       this.$broadcast('app:take-picture');
+    },
+    validatePicture: function () {
+      if (this.picture) {
+        this.displayAlert('info', 'Thanks! We are currently uploading the picture...', true);
+
+        // Conversion to blob to reduce the data size
+        // A base64 string is heavier to send than a blob
+        var characters = atob(this.picture.split(',')[1]);
+        var chunkSize = 512;
+        var bytes = [];
+
+        for (var offset = 0; offset < characters.length; offset += chunkSize) {
+            var slice = characters.slice(offset, offset + chunkSize);
+
+            var byteNumbers = new Array(slice.length);
+
+            for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            var byteArray = new Uint8Array(byteNumbers);
+
+            bytes.push(byteArray);
+        }
+
+        var blob = new Blob(bytes, {
+            type: 'image/jpeg'
+        });
+
+        this.$options.ApiClient.create({
+          title: 'TEST',
+          latitude: this.position.coords.latitude,
+          longitude: this.position.coords.longitude,
+        }, function (success, response, status) {
+          if (success && response.success && response.furniture) {
+            this.$options.ApiClient.upload(response.furniture.id, {
+              picture: blob,
+              filename: 'test.jpg'
+            }, function (success, response, status) {
+              this.isTaken = false;
+              this.picture = null;
+
+              if (success && response.success) {
+                this.$emit('app:api:uploaded', response.furniture);
+              } else {
+                // Handle an error...
+                this.$emit('app:api:error', response, status);
+              }
+            }, this);
+          }
+        }, this);
+      }
     },
     definePosition: function () {
       var Camera = this;
