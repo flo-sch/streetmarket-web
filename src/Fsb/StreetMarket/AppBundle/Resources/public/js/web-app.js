@@ -701,7 +701,15 @@ var Vue = require('vue');
       getUserMedia: function (sourceHasChanged) {
         sourceHasChanged = sourceHasChanged || false;
         var renderer = this;
-        var constraints = true;
+        var constraints = {
+          optional: [{
+            facingMode: 'environment'
+          }, {
+            height: {
+              min: window.innerHeight
+            }
+          }]
+        };
 
         if (sourceHasChanged) {
           this.$el.pause();
@@ -715,7 +723,8 @@ var Vue = require('vue');
         if (this.source) {
           constraints = {
             optional: [{
-              sourceId: this.source
+              sourceId: this.source,
+              facingMode: 'environment'
             }]
           };
         }
