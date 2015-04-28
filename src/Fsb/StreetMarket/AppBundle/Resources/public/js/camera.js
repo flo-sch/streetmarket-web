@@ -65,10 +65,6 @@ var UserCameraRenderer = Vue.extend({
         };
       }
 
-      console.log('getUserMedia', this.source, constraints);
-
-      this.$dispatch('test', JSON.stringify(constraints));
-
       if (navigator.getUserMedia) {
         navigator.getUserMedia({
           video: constraints,
@@ -76,8 +72,6 @@ var UserCameraRenderer = Vue.extend({
         }, function (stream) {
           renderer.stream = stream;
           renderer.$el.src = window.URL.createObjectURL(stream);
-
-          renderer.$dispatch('test', 'new stream! ' + renderer.$el.src);
           renderer.$el.play();
         }, function (error) {
           renderer.$dispatch('browser:getUserMedia:error', error);
@@ -90,7 +84,7 @@ var UserCameraRenderer = Vue.extend({
       this.$dispatch('renderer:video:ready', {
         width: this.$el.videoWidth,
         height: this.$el.videoHeight,
-        source: this.$el
+        element: this.$el
       });
     }
   }
@@ -101,14 +95,14 @@ var UserCameraReflector = Vue.extend({
   template: '#user-camera-reflector-template',
   data: function () {
     return {
-      source: null,
+      video: null,
       visible: false,
     }
   },
   events: {
     'renderer:video:ready': function (video) {
       this.setSize(video.width, video.height);
-      this.source = video.source;
+      this.video = video.element;
     },
     'app:record:pause': function () {
       this.visible = true;
@@ -136,14 +130,14 @@ var UserCameraReflector = Vue.extend({
       }
     },
     drawPicture: function () {
-      if (this.source) {
+      if (this.element) {
         var context = this.getContext();
-        context.drawImage(this.source, 0, 0, this.$el.width, this.$el.height);
+        context.drawImage(this.element, 0, 0, this.$el.width, this.$el.height);
         var data = this.$el.toDataURL('image/jpeg', 1.0);
 
         this.$dispatch('reflector:picture:taken', data);
       } else {
-        console.error('Unknown source...');
+        console.error('Unknown source element...');
       }
     }
   }
@@ -163,18 +157,6 @@ var UserCamera = Vue.extend({
     'camera-reflector': UserCameraReflector
   }
 });
-
-// var Furniture = Vue.extend({
-//   replace: true,
-//   template: '#furniture-template',
-//   data: function () {
-//     return {
-//       title: null,
-//       tookAt: null,
-//       picturePath: null
-//     }
-//   }
-// });
 
 var FurnituresList = Vue.extend({
   replace: true,
@@ -241,9 +223,6 @@ var Camera = new Vue({
     }, this);
   },
   events: {
-    'test': function (message) {
-      this.displayAlert('info', message, true);
-    },
     'browser:getUserMedia:unsupported': function () {
       this.displayAlert('danger', 'Sorry, the browser you are using doesn\'t support getUserMedia', false);
     },
@@ -275,11 +254,6 @@ var Camera = new Vue({
       this.isTaken = true;
       this.pauseRecording();
       this.picture = data;
-    }
-  },
-  watch: {
-    sources: function () {
-      this.displayAlert('info', 'sources found : ' + this.sources.length, true);
     }
   },
   components: {
@@ -404,7 +378,6 @@ var Camera = new Vue({
           this.currentSource++;
         }
 
-        this.displayAlert('info', 'Current source: [' + this.currentSource + '] with id : ' + this.sources[this.currentSource], true);
         this.$broadcast('app:source:change', this.sources[this.currentSource]);
       }
     },
