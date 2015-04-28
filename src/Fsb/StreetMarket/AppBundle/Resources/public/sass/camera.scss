@@ -60,6 +60,11 @@ html {
         }
         .navbar-header {
             float: none;
+            .nav {
+                li {
+                    float: left;
+                }
+            }
         }
         .navbar-center {
             text-align: center;
