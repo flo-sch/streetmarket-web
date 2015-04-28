@@ -77,6 +77,12 @@ html {
                 margin: 8px;
                 padding: 0;
                 max-width: 150px;
+                .form-group {
+                    max-width: 100%;
+                    .form-control {
+                        max-width: 100%;
+                    }
+                }
             }
         }
         .btn-aligned {

@@ -1,6 +1,5 @@
-navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || function () {});
-
-Vue.config.debug = true;
+navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+window.URL = (window.URL || window.webkitURL);
 
 var UserCameraRenderer = Vue.extend({
   replace: true,
@@ -130,9 +129,9 @@ var UserCameraReflector = Vue.extend({
       }
     },
     drawPicture: function () {
-      if (this.element) {
+      if (this.video) {
         var context = this.getContext();
-        context.drawImage(this.element, 0, 0, this.$el.width, this.$el.height);
+        context.drawImage(this.video, 0, 0, this.$el.width, this.$el.height);
         var data = this.$el.toDataURL('image/jpeg', 1.0);
 
         this.$dispatch('reflector:picture:taken', data);
@@ -197,6 +196,7 @@ var Camera = new Vue({
   el: 'body',
   data: {
     view: 'furnitures',
+    isCompatible: true,
     isLocated: false,
     isRecording: false,
     isLookingForSources: false,
@@ -210,7 +210,12 @@ var Camera = new Vue({
   },
   ApiClient: null,
   ready: function () {
-    this.getMediaSources();
+    if (typeof navigator.getUserMedia !== 'function' || typeof window.URL !== 'function'  || typeof window.URL.createObjectURL !== 'function') {
+      this.isCompatible = false;
+      this.displayAlert('warning', 'Your browser does not allow you to take geolocated pictures.', true);
+    } else {
+      this.getMediaSources();
+    }
 
     this.$options.ApiClient = new StreetMarketClient(window.location.origin);
 
@@ -241,7 +246,21 @@ var Camera = new Vue({
       this.displayAlert('success', 'Amazing! Huge thanks from everyone here :)', true);
     },
     'app:api:error': function (response, status) {
-      this.displayAlert('danger', 'Oh snap! ' + response.message, true);
+      var message = 'Something went wrong... Please, try again!';
+
+      switch (status) {
+        case 400:
+          message = 'Something is not working. please, contact us!';
+          break;
+        case 500:
+          message = 'Something is not working... Please, try again!';
+          break;
+        case 503:
+          message = 'Our server is actually unavailable... Please try again later!';
+          break;
+      }
+
+      this.displayAlert('danger', 'Oh snap! ' + message, true);
     },
     'app:geolocation:found': function () {
       this.displayAlert('success', 'Nice! We just located you :)', true);
@@ -348,6 +367,8 @@ var Camera = new Vue({
                 this.$emit('app:api:error', response, status);
               }
             }, this);
+          } else {
+            this.$emit('app:api:error', response, status);
           }
         }, this);
       }
@@ -384,7 +405,7 @@ var Camera = new Vue({
     getMediaSources: function () {
       var Camera = this;
 
-      if (typeof MediaStreamTrack === 'undefined') {
+      if (typeof MediaStreamTrack === 'undefined' || typeof MediaStreamTrack.getSources !== 'function') {
         this.isLookingForSources = false;
       } else {
         this.isLookingForSources = true;
