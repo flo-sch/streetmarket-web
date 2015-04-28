@@ -14,7 +14,7 @@ var UserCameraRenderer = Vue.extend({
   },
   watch: {
     source: function () {
-
+      this.getUserMedia(true);
     }
   },
   events: {
@@ -40,9 +40,15 @@ var UserCameraRenderer = Vue.extend({
     }
   },
   methods: {
-    getUserMedia: function () {
+    getUserMedia: function (sourceHasChanged) {
+      sourceHasChanged = sourceHasChanged || false;
       var renderer = this;
       var constraints = true;
+
+      if (sourceHasChanged) {
+        this.$el.pause();
+        this.$el.src = null;
+      }
 
       if (this.source) {
         constraints = {
@@ -386,6 +392,7 @@ var Camera = new Vue({
           this.currentSource = 0;
         }
 
+        this.displayAlert('info', 'Current source: [' + this.currentSource + '] with id : ' + this.sources[this.currentSource], true);
         this.$broadcast('app:source:change', this.sources[this.currentSource]);
       }
     },
