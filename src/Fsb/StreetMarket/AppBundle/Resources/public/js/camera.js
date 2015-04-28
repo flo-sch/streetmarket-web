@@ -8,29 +8,21 @@ var UserCameraRenderer = Vue.extend({
   data: function () {
     return {
       width: 0,
-      height: 0
+      height: 0,
+      source: null
+    }
+  },
+  watch: {
+    source: function () {
+
     }
   },
   events: {
     'app:record:on': function () {
-      var renderer = this;
-
       if (this.$el.src) {
         this.$el.play();
       } else {
-        if (navigator.getUserMedia) {
-          navigator.getUserMedia({
-            video: true,
-            audio: false
-          }, function (stream) {
-            renderer.$el.src = window.URL.createObjectURL(stream);
-            renderer.$el.play();
-          }, function (error) {
-            renderer.$dispatch('browser:getUserMedia:error', error);
-          });
-        } else {
-          renderer.$dispatch('browser:getUserMedia:unsupported');
-        }
+        this.getUserMedia();
       }
     },
     'app:record:pause': function () {
@@ -39,17 +31,54 @@ var UserCameraRenderer = Vue.extend({
     'app:record:off': function () {
       // Stop the video and clear its source
       this.$el.pause();
-      this.$el.src = '';
+      this.$el.src = null;
+      // TODO
+      // Stop the stream !
+    },
+    'app:source:change': function (source) {
+      this.source = source;
     }
   },
   methods: {
+    getUserMedia: function () {
+      var renderer = this;
+      var constraints = true;
+
+      if (this.source) {
+        constraints = {
+          video: {
+            optional: [{
+              sourceId: this.source
+            }]
+          }
+        };
+      }
+
+      console.log('getUserMedia', this.source, constraints);
+
+      this.$dispatch('test', JSON.stringify(constraints));
+
+      if (navigator.getUserMedia) {
+        navigator.getUserMedia({
+          video: constraints,
+          audio: false
+        }, function (stream) {
+          renderer.$el.src = window.URL.createObjectURL(stream);
+          renderer.$el.play();
+        }, function (error) {
+          renderer.$dispatch('browser:getUserMedia:error', error);
+        });
+      } else {
+        renderer.$dispatch('browser:getUserMedia:unsupported');
+      }
+    },
     onSourceReady: function (event) {
       this.$dispatch('renderer:video:ready', {
         width: this.$el.videoWidth,
         height: this.$el.videoHeight,
         source: this.$el
       });
-    },
+    }
   }
 });
 
@@ -178,10 +207,14 @@ var Camera = new Vue({
     title: 'TEST',
     picture: null,
     position: null,
+    sources: [],
+    currentSource: 0,
     furnitures: []
   },
   ApiClient: null,
   ready: function () {
+    this.getMediaSources();
+
     this.$options.ApiClient = new StreetMarketClient(window.location.origin);
 
     this.$options.ApiClient.list(function (success, response, status) {
@@ -193,6 +226,9 @@ var Camera = new Vue({
     }, this);
   },
   events: {
+    'test': function (message) {
+      this.displayAlert('info', message, true);
+    },
     'browser:getUserMedia:unsupported': function () {
       this.displayAlert('danger', 'Sorry, the browser you are using doesn\'t support getUserMedia', false);
     },
@@ -334,6 +370,35 @@ var Camera = new Vue({
         Camera.$emit('app:geolocation:canceled', error);
       }, {
         enableHighAccuracy: true
+      });
+    },
+    reverseVideo: function () {
+      if (this.sources.length > 0) {
+
+        if (this.currentSource >= (this.sources.length - 1)) {
+          this.currentSource++;
+        } else {
+          this.currentSource = 0;
+        }
+
+        this.$broadcast('app:source:change', this.sources[this.currentSource]);
+      }
+    },
+    getMediaSources: function () {
+      var Camera = this;
+
+      MediaStreamTrack.getSources(function (sources) {
+        var length = sources.length;
+
+        while (length--) {
+          var source = sources[length];
+
+          console.log('source found', source);
+
+          if (source.kind === 'video') {
+            Camera.sources.push(source.id);
+          }
+        }
       });
     },
     displayAlert: function (level, message, dismissable) {
