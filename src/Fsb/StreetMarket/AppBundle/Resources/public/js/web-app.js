@@ -335,7 +335,7 @@ var moment = require('moment');
       isRecording: false,
       isLookingForSources: false,
       isTaken: false,
-      title: 'TEST',
+      title: '',
       picture: null,
       position: null,
       sources: [],
