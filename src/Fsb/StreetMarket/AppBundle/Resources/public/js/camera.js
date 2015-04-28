@@ -175,6 +175,7 @@ var Camera = new Vue({
     isLocated: false,
     isRecording: false,
     isTaken: false,
+    title: 'TEST',
     picture: null,
     position: null,
     furnitures: []
@@ -207,7 +208,7 @@ var Camera = new Vue({
       // NOW the picture has been correctly uploaded,
       // Provide a visual feedback [Flash message ?]
       this.furnitures.unshift(this.parseFurniture(furniture));
-      this.displayAlert('success', 'Amazing! The community thanks you a lot!', true);
+      this.displayAlert('success', 'Amazing! Huge thanks from everyone here :)', true);
     },
     'app:api:error': function (response, status) {
       this.displayAlert('danger', 'Oh snap! ' + response.message, true);
@@ -257,6 +258,7 @@ var Camera = new Vue({
       }
 
       this.pauseRecording();
+      this.isRecording = false;
       this.$broadcast('app:record:off');
 
       this.setView('furnitures');
@@ -297,7 +299,7 @@ var Camera = new Vue({
         });
 
         this.$options.ApiClient.create({
-          title: 'TEST',
+          title: this.title,
           latitude: this.position.coords.latitude,
           longitude: this.position.coords.longitude,
         }, function (success, response, status) {

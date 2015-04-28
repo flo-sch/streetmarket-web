@@ -66,6 +66,13 @@ html {
             .navbar-text {
                 float: none;
             }
+            .navbar-form {
+                display: inline-block;
+                float: none;
+                margin: 8px;
+                padding: 0;
+                max-width: 150px;
+            }
         }
         .btn-aligned {
             display: inline-block;
