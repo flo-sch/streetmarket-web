@@ -9,7 +9,8 @@ var UserCameraRenderer = Vue.extend({
     return {
       width: 0,
       height: 0,
-      source: null
+      source: null,
+      stream: null
     }
   },
   watch: {
@@ -32,8 +33,10 @@ var UserCameraRenderer = Vue.extend({
       // Stop the video and clear its source
       this.$el.pause();
       this.$el.src = null;
-      // TODO
-      // Stop the stream !
+      if (this.stream) {
+        this.stream.stop();
+        this.stream = null;
+      }
     },
     'app:source:change': function (source) {
       this.source = source;
@@ -48,6 +51,10 @@ var UserCameraRenderer = Vue.extend({
       if (sourceHasChanged) {
         this.$el.pause();
         this.$el.src = null;
+        if (this.stream) {
+          this.stream.stop();
+          this.stream = null;
+        }
       }
 
       if (this.source) {
@@ -69,6 +76,7 @@ var UserCameraRenderer = Vue.extend({
           video: constraints,
           audio: false
         }, function (stream) {
+          renderer.stream = stream;
           renderer.$el.src = window.URL.createObjectURL(stream);
           renderer.$el.play();
         }, function (error) {
