@@ -3,7 +3,7 @@
     <camera-renderer v-ref='Renderer'></camera-renderer>
     <camera-reflector v-ref='Reflector'></camera-reflector>
   </section>
-  <nav class='navbar navbar-fixed-bottom navbar-default navbar-center'>
+  <nav class='navbar navbar-fixed-bottom navbar-material-indigo-800 navbar-center'>
     <p class='navbar-text text-muted' v-if='!isLocated'><span class='glyphicon glyphicon-map-marker' aria-hidden='true'></span> Looking for your location...</p>
     <a class='btn btn-md btn-info btn-aligned' href='#take-picture' v-on='click: takePicture' v-if='isLocated && isRecording && !isTaken'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
     <a class='btn btn-md btn-info btn-aligned' href='#record' v-on='click: record' v-if='isTaken'><span class='glyphicon glyphicon-refresh' aria-hidden='true'></span></a>

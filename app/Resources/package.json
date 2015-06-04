@@ -1,0 +1,11 @@
+{
+  "name": "fsb-street-market-app",
+  "version": "0.0.0",
+  "description": "",
+  "dependencies": {
+    "uglify-js": "^2.4.23",
+    "uglifycss": "0.0.15"
+  },
+  "devDependencies": {},
+  "author": "fschildknecht <florent.schildknecht@gmail.com>"
+}

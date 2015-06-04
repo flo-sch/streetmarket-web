@@ -1,7 +1,5 @@
 // $grid-float-breakpoint: 0px;
 
-@import "../bower_components/bootstrap-sass/assets/stylesheets/bootstrap";
-
 html {
     width: 100%;
     height: 100%;
@@ -60,6 +58,10 @@ html {
         }
         .navbar-header {
             float: none;
+            .navbar-brand {
+                height: 50px;
+                padding: 10px 15px;
+            }
             .nav {
                 li {
                     float: left;
@@ -91,11 +93,11 @@ html {
         }
         #alert-container {
             position: fixed;
-            top: 50px;
+            top: 60px;
             left: 0;
             width: 100%;
             margin-bottom: 0;
-            z-index: 999;
+            z-index: 1100;
             .alert {
                 margin: 0;
                 border-radius: 0;

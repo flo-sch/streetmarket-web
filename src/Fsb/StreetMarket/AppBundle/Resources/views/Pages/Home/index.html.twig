@@ -2,8 +2,14 @@
 
 {% block stylesheets %}
     {% stylesheets
+        '@FsbStreetMarketAppBundle/Resources/public/sass/bootstrap.scss'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/css/roboto.css'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/css/ripples.css'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/css/material-fullpalette.css'
         '@FsbStreetMarketAppBundle/Resources/public/sass/camera.scss'
-        filter='scss' output='css/home.css' %}
+        filter='?uglifycss'
+        output='css/home.min.css'
+        %}
         <link rel='stylesheet' href='{{ asset_url }}' />
     {% endstylesheets %}
 {% endblock %}
@@ -15,9 +21,15 @@
 
 {% block javascripts %}
     {% javascripts
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/jquery/dist/jquery.js'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-sass/assets/javascripts/bootstrap.js'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/js/ripples.js'
+        '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/js/material.js'
         '@FsbStreetMarketAppBundle/Resources/public/js/polyfills.js'
         '@FsbStreetMarketAppBundle/Resources/public/js/web-app.js'
-        output='js/home.js' %}
+        filter='?uglifyjs2'
+        output='js/home.min.js'
+        %}
         <script src='{{ asset_url }}'></script>
     {% endjavascripts %}
 {% endblock %}
