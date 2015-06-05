@@ -206,7 +206,7 @@ var StreetMarketClient = function (baseUrl) {
 }
 
 module.exports = StreetMarketClient;
-},{"./request.js":2,"moment":10}],2:[function(require,module,exports){
+},{"./request.js":2,"moment":11}],2:[function(require,module,exports){
 var Request = function (url, method, settings) {
   var methods = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'PATCH'];
 
@@ -283,7 +283,7 @@ Vue.config.debug = true;
 
 var appOptions = require('./views/App.vue');
 var app = new Vue(appOptions);
-},{"./views/App.vue":5,"vue":71}],4:[function(require,module,exports){
+},{"./views/App.vue":5,"vue":72}],4:[function(require,module,exports){
 var __vue_template__ = "<div class=\"container\">\n    <div class=\"alert\" role=\"alert\" v-if=\"display\" v-class=\"&quot;alert-&quot; + level, alert-dismissable: dismissable\" v-transition=\"fade\">\n      <a href=\"#close\" type=\"button\" class=\"close\" aria-label=\"Close\" v-if=\"dismissable\" v-on=\"click: dismiss\"><span aria-hidden=\"true\">×</span></a>\n      <p>{{ message }}</p>\n    </div>\n  </div>";
 var Vue = require('vue');
 
@@ -318,18 +318,19 @@ var Vue = require('vue');
   module.exports = Alert;
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = __vue_template__;
 
-},{"vue":71}],5:[function(require,module,exports){
+},{"vue":72}],5:[function(require,module,exports){
 var moment = require('moment');
   var StreetMarketClient = require('../api/StreetMarketClient.js');
 
   var Alert = require('./Alert.vue');
   var Camera = require('./Camera.vue');
   var FurnituresList = require('./FurnituresList.vue');
+  var Map = require('./Map.vue');
 
   module.exports = {
     el: 'body',
     data: {
-      view: 'furnitures',
+      view: 'map',
       isCompatible: true,
       isLocated: false,
       isRecording: false,
@@ -358,8 +359,14 @@ var moment = require('moment');
           response.furnitures.forEach(function (furniture) {
             this.furnitures.push(this.parseFurniture(furniture));
           }, this);
+
+          this.$broadcast('app:furnitures:listed');
         }
       }, this);
+
+      if (this.position === null) {
+        this.definePosition();
+      }
     },
     events: {
       'browser:getUserMedia:unsupported': function () {
@@ -413,7 +420,8 @@ var moment = require('moment');
     components: {
       'camera': Camera,
       'furnitures': FurnituresList,
-      'alert': Alert
+      'alert': Alert,
+      'map': Map
     },
     methods: {
       setView: function (view) {
@@ -422,10 +430,6 @@ var moment = require('moment');
       record: function (event) {
         if (event) {
           event.preventDefault();
-        }
-
-        if (this.position === null) {
-          this.definePosition();
         }
 
         this.setView('camera');
@@ -563,15 +567,40 @@ var moment = require('moment');
         return {
           id: furniture.id,
           title: furniture.title,
-          tookAt: moment(furniture.took_at).fromNow(),
+          tookAt: (new moment(furniture.took_at)).fromNow(),
+          latitude: furniture.latitude,
+          longitude: furniture.longitude,
           picture: furniture.picture
         }
+      },
+      calculateDistanceBetweenLocations: function (origin, target) {
+        var distance,
+            earthRadius = 6371;
+
+        distance = 0.5 -
+                  Math.cos(this.degreeToRadian(target.latitude - origin.latitude)) / 2 +
+                  Math.cos(this.degreeToRadian(origin.latitude)) * Math.cos(this.degreeToRadian(target.latitude)) *
+                  (1 - Math.cos(this.degreeToRadian(target.longitude - origin.longitude))) / 2;
+
+        distance = earthRadius * 2 * Math.asin(Math.sqrt(distance));
+
+        if (distance > 10) {
+          distance = Math.round(distance * 100) / 100 + ' kms';
+        } else {
+          distance *= 1000;
+          distance = Math.round(distance * 100) / 100 + ' m';
+        }
+
+        return distance;
+      },
+      degreeToRadian: function (degree) {
+        return degree * Math.PI / 180;
       }
     }
   }
 
-},{"../api/StreetMarketClient.js":1,"./Alert.vue":4,"./Camera.vue":6,"./FurnituresList.vue":9,"moment":10}],6:[function(require,module,exports){
-var __vue_template__ = "<section class=\"camera\">\n    <camera-renderer v-ref=\"Renderer\"></camera-renderer>\n    <camera-reflector v-ref=\"Reflector\"></camera-reflector>\n  </section>\n  <nav class=\"navbar navbar-fixed-bottom navbar-material-indigo-800 navbar-center\">\n    <p class=\"navbar-text text-muted\" v-if=\"!isLocated\"><span class=\"glyphicon glyphicon-map-marker\" aria-hidden=\"true\"></span> Looking for your location...</p>\n    <a class=\"btn btn-md btn-info btn-aligned\" href=\"#take-picture\" v-on=\"click: takePicture\" v-if=\"isLocated &amp;&amp; isRecording &amp;&amp; !isTaken\"><span class=\"glyphicon glyphicon-camera\" aria-hidden=\"true\"></span></a>\n    <a class=\"btn btn-md btn-info btn-aligned\" href=\"#record\" v-on=\"click: record\" v-if=\"isTaken\"><span class=\"glyphicon glyphicon-refresh\" aria-hidden=\"true\"></span></a>\n    <form class=\"navbar-form\" action=\"#picture\" v-if=\"isTaken\">\n      <div class=\"form-group\">\n        <input class=\"form-control\" type=\"text\" placeholder=\"Name\" v-model=\"title\">\n      </div>\n    </form>\n    <a class=\"btn btn-md btn-success btn-aligned\" href=\"#validate-picture\" v-on=\"click: validatePicture\" v-if=\"isTaken\"><span class=\"glyphicon glyphicon-check\" aria-hidden=\"true\"></span></a>\n  </nav>";
+},{"../api/StreetMarketClient.js":1,"./Alert.vue":4,"./Camera.vue":6,"./FurnituresList.vue":9,"./Map.vue":10,"moment":11}],6:[function(require,module,exports){
+var __vue_template__ = "<section class=\"camera\">\n    <camera-renderer v-ref=\"Renderer\"></camera-renderer>\n    <camera-reflector v-ref=\"Reflector\"></camera-reflector>\n  </section>";
 var Vue = require('vue');
 
   var CameraRenderer = require('./CameraRenderer.vue');
@@ -594,7 +623,7 @@ var Vue = require('vue');
   module.exports = Camera;
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = __vue_template__;
 
-},{"./CameraReflector.vue":7,"./CameraRenderer.vue":8,"vue":71}],7:[function(require,module,exports){
+},{"./CameraReflector.vue":7,"./CameraRenderer.vue":8,"vue":72}],7:[function(require,module,exports){
 var __vue_template__ = "<canvas class=\"background-read-only\" resize=\"true\" v-class=\"visible: visible\"></canvas>";
 var Vue = require('vue');
 
@@ -653,7 +682,7 @@ var Vue = require('vue');
   module.exports = CameraReflector;
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = __vue_template__;
 
-},{"vue":71}],8:[function(require,module,exports){
+},{"vue":72}],8:[function(require,module,exports){
 var __vue_template__ = "<video class=\"fullscreen\" v-on=\"canplay: onSourceReady\" autoplay=\"true\">Your browser does not support this application :(</video>";
 var Vue = require('vue');
 
@@ -762,7 +791,7 @@ var Vue = require('vue');
   module.exports = CameraRenderer;
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = __vue_template__;
 
-},{"vue":71}],9:[function(require,module,exports){
+},{"vue":72}],9:[function(require,module,exports){
 var __vue_template__ = "<section class=\"furnitures container\">\n    <h1>Bons plans gratuits :)</h1>\n    <div class=\"row\">\n      <article class=\"furniture col-xs-6 col-sm-4 col-md-3\" v-repeat=\"furniture: furnitures\">\n        <img class=\"furniture-picture img-responsive\" v-attr=\"src: &quot;/&quot; + furniture.picture\" alt=\"{{ furniture.title }}\">\n        <h4 class=\"furniture-title\">{{ furniture.title }}</h4>\n        <p class=\"furniture-date\">{{ furniture.tookAt }}</p>\n      </article>\n    </div>\n  </section>";
 var Vue = require('vue');
 
@@ -774,7 +803,163 @@ var Vue = require('vue');
   module.exports = FurnituresList;
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = __vue_template__;
 
-},{"vue":71}],10:[function(require,module,exports){
+},{"vue":72}],10:[function(require,module,exports){
+var __vue_template__ = "<section class=\"map-container full\">\n    <div class=\"map-canvas\"></div>\n  </section>";
+var Vue = require('vue');
+
+  var Map = Vue.extend({
+    replace: true,
+    inherit: true,
+    map: null,
+    data: function () {
+      return {
+        zoomLevel: 13,
+        currentInfoWindow: null,
+        markers: {
+          user: null,
+          furnitures: [],
+        },
+        infoWindows: {
+          furnitures: []
+        }
+      }
+    },
+    watch: {
+      position: function () {
+        this.setMapCenter(this.position.coords, this.zoomLevel);
+        this.setUserLocationMarker(this.position.coords);
+
+        if (this.furnitures.length > 0) {
+          this.displayFurnituresMarkers();
+        }
+      }
+    },
+    events: {
+      'app:furnitures:listed': function () {
+        if (this.position) {
+          this.displayFurnituresMarkers();
+        }
+      }
+    },
+    ready: function () {
+      var Map = this;
+
+      google.maps.event.addDomListener(window, 'load', function () {
+        var latitude, longitude;
+
+        if (Map.position && typeof Map.position === 'object' && 'coords' in Map.position) {
+          latitude = Map.position.coords.latitude;
+          longitude = Map.position.coords.longitude;
+        } else {
+          latitude = 0;
+          longitude = 0;
+        }
+
+        Map.$options.map = new google.maps.Map(document.querySelector('.map-canvas'), {
+          center: new google.maps.LatLng(latitude, longitude),
+          zoom: Map.zoomLevel
+        });
+      });
+    },
+    methods: {
+      setMapCenter: function (position, zoom) {
+        if (this.$options.map) {
+          this.$options.map.setCenter(new google.maps.LatLng(position.latitude, position.longitude));
+          this.$options.map.setZoom(zoom);
+        }
+      },
+      setUserLocationMarker: function (position) {
+        if (this.$options.map) {
+          if (this.markers.user) {
+            this.markers.user.setMap(null);
+            this.markers.user = null;
+          }
+
+          this.markers.user = new google.maps.Marker({
+            position: new google.maps.LatLng(position.latitude, position.longitude),
+            map: this.$options.map,
+            icon: {
+              size: new google.maps.Size(80, 80),
+              scaledSize: new google.maps.Size(30, 30),
+              anchor: new google.maps.Point(15, 15),
+              url: '/images/map/user-location-marker.png'
+            },
+            title: 'Me'
+          });
+        }
+      },
+      displayFurnituresMarkers: function () {
+        var markersLength = this.markers.furnitures.length;
+
+        while (markersLength--) {
+          this.markers.furnitures[markersLength].setMap(null);
+          this.markers.furnitures.splice(markersLength, 1);
+        }
+
+        this.furnitures.forEach(function (furniture) {
+          this.addFurnitureMarker(furniture);
+        }, this);
+      },
+      addFurnitureMarker: function (furniture) {
+        var Map = this;
+
+        if (this.$options.map) {
+          var marker, infoWindow;
+
+          // Preload picture
+          var picture = document.createElement('img');
+
+          picture.onload = function (event) {
+            marker = new google.maps.Marker({
+              position: new google.maps.LatLng(furniture.latitude, furniture.longitude),
+              map: Map.$options.map,
+              icon: {
+                size: new google.maps.Size(80, 80),
+                scaledSize: new google.maps.Size(40, 40),
+                anchor: new google.maps.Point(20, 20),
+                url: '/images/map/furniture-location-marker.png'
+              },
+              title: 'Me'
+            });
+
+            Map.markers.furnitures.push(marker);
+
+            infoWindow = new google.maps.InfoWindow({
+              pixelOffset: new google.maps.Size(-20, 20),
+              content: '<div class="furniture-overview">' +
+                '<h4 class="furniture-title">' + furniture.title + '</h4>' +
+                '<img class="furniture-picture img-responsive" src="' + furniture.picture + '" alt="' + furniture.title + '" />' +
+                '<p class="furniture-date">' + furniture.tookAt + '</p>' +
+                '<p>' + Map.calculateDistanceBetweenLocations(Map.position.coords, furniture) + '</>' +
+              '</div>'
+            });
+
+            Map.infoWindows.furnitures.push(infoWindow);
+
+            google.maps.event.addListener(marker, 'click', function () {
+              if (Map.currentInfoWindow) {
+                Map.currentInfoWindow.close();
+              }
+
+              Map.currentInfoWindow = infoWindow;
+              infoWindow.open(Map.$options.map,marker);
+            });
+          }
+
+          picture.onerror = function (event) {
+            // Picture cannot be loaded (probably does not exists)
+          }
+
+          picture.src = furniture.picture;
+        }
+      }
+    }
+  });
+
+  module.exports = Map;
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = __vue_template__;
+
+},{"vue":72}],11:[function(require,module,exports){
 //! moment.js
 //! version : 2.10.2
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -3858,7 +4043,7 @@ var Vue = require('vue');
     return _moment;
 
 }));
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -3906,7 +4091,7 @@ exports.$addChild = function (opts, BaseCtor) {
   this._children.push(child)
   return child
 }
-},{"../util":68}],12:[function(require,module,exports){
+},{"../util":69}],13:[function(require,module,exports){
 var _ = require('../util')
 var Watcher = require('../watcher')
 var Path = require('../parsers/path')
@@ -4073,7 +4258,7 @@ exports.$log = function (path) {
   }
   console.log(data)
 }
-},{"../parsers/directive":56,"../parsers/expression":57,"../parsers/path":58,"../parsers/text":60,"../util":68,"../watcher":72}],13:[function(require,module,exports){
+},{"../parsers/directive":57,"../parsers/expression":58,"../parsers/path":59,"../parsers/text":61,"../util":69,"../watcher":73}],14:[function(require,module,exports){
 var _ = require('../util')
 var transition = require('../transition')
 
@@ -4285,7 +4470,7 @@ function remove (el, vm, cb) {
   _.remove(el)
   if (cb) cb()
 }
-},{"../transition":62,"../util":68}],14:[function(require,module,exports){
+},{"../transition":63,"../util":69}],15:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -4460,7 +4645,7 @@ function modifyListenerCount (vm, event, count) {
     parent = parent.$parent
   }
 }
-},{"../util":68}],15:[function(require,module,exports){
+},{"../util":69}],16:[function(require,module,exports){
 var _ = require('../util')
 var mergeOptions = require('../util/merge-option')
 
@@ -4611,7 +4796,7 @@ function createAssetRegisters (Constructor) {
 }
 
 createAssetRegisters(exports)
-},{"../compiler/compile":19,"../compiler/transclude":20,"../config":21,"../parsers/directive":56,"../parsers/expression":57,"../parsers/path":58,"../parsers/template":59,"../parsers/text":60,"../util":68,"../util/merge-option":70}],16:[function(require,module,exports){
+},{"../compiler/compile":20,"../compiler/transclude":21,"../config":22,"../parsers/directive":57,"../parsers/expression":58,"../parsers/path":59,"../parsers/template":60,"../parsers/text":61,"../util":69,"../util/merge-option":71}],17:[function(require,module,exports){
 var _ = require('../util')
 var compile = require('../compiler/compile')
 
@@ -4684,7 +4869,7 @@ exports.$destroy = function (remove, deferCleanup) {
 exports.$compile = function (el) {
   return compile(el, this.$options, true)(this, el)
 }
-},{"../compiler/compile":19,"../util":68}],17:[function(require,module,exports){
+},{"../compiler/compile":20,"../util":69}],18:[function(require,module,exports){
 var _ = require('./util')
 var MAX_UPDATE_COUNT = 10
 
@@ -4779,7 +4964,7 @@ exports.push = function (job) {
     }
   }
 }
-},{"./util":68}],18:[function(require,module,exports){
+},{"./util":69}],19:[function(require,module,exports){
 /**
  * A doubly linked list-based Least Recently Used (LRU)
  * cache. Will keep most recently used items while
@@ -4892,7 +5077,7 @@ p.get = function (key, returnEntry) {
 }
 
 module.exports = Cache
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var _ = require('../util')
 var config = require('../config')
 var textParser = require('../parsers/text')
@@ -5466,7 +5651,7 @@ function directiveComparator (a, b) {
   b = b.def.priority || 0
   return a > b ? 1 : -1
 }
-},{"../config":21,"../parsers/directive":56,"../parsers/template":59,"../parsers/text":60,"../util":68}],20:[function(require,module,exports){
+},{"../config":22,"../parsers/directive":57,"../parsers/template":60,"../parsers/text":61,"../util":69}],21:[function(require,module,exports){
 var _ = require('../util')
 var templateParser = require('../parsers/template')
 
@@ -5623,7 +5808,7 @@ function insertContentAt (outlet, contents) {
   }
   parent.removeChild(outlet)
 }
-},{"../parsers/template":59,"../util":68}],21:[function(require,module,exports){
+},{"../parsers/template":60,"../util":69}],22:[function(require,module,exports){
 module.exports = {
 
   /**
@@ -5710,7 +5895,7 @@ Object.defineProperty(module.exports, 'delimiters', {
     this._delimitersChanged = true
   }
 })
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var _ = require('./util')
 var config = require('./config')
 var Watcher = require('./watcher')
@@ -5933,7 +6118,7 @@ p.set = function (value, lock) {
 }
 
 module.exports = Directive
-},{"./config":21,"./parsers/expression":57,"./parsers/text":60,"./util":68,"./watcher":72}],23:[function(require,module,exports){
+},{"./config":22,"./parsers/expression":58,"./parsers/text":61,"./util":69,"./watcher":73}],24:[function(require,module,exports){
 // xlink
 var xlinkNS = 'http://www.w3.org/1999/xlink'
 var xlinkRE = /^xlink:/
@@ -5966,7 +6151,7 @@ function xlinkHandler (value) {
     this.el.removeAttributeNS(xlinkNS, 'href')
   }
 }
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var _ = require('../util')
 var addClass = _.addClass
 var removeClass = _.removeClass
@@ -5985,7 +6170,7 @@ module.exports = function (value) {
     }
   }
 }
-},{"../util":68}],25:[function(require,module,exports){
+},{"../util":69}],26:[function(require,module,exports){
 var config = require('../config')
 
 module.exports = {
@@ -5998,7 +6183,7 @@ module.exports = {
   }
 
 }
-},{"../config":21}],26:[function(require,module,exports){
+},{"../config":22}],27:[function(require,module,exports){
 var _ = require('../util')
 var templateParser = require('../parsers/template')
 
@@ -6228,7 +6413,7 @@ module.exports = {
   }
 
 }
-},{"../parsers/template":59,"../util":68}],27:[function(require,module,exports){
+},{"../parsers/template":60,"../util":69}],28:[function(require,module,exports){
 module.exports = {
 
   isLiteral: true,
@@ -6242,7 +6427,7 @@ module.exports = {
   }
   
 }
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var _ = require('../util')
 
 module.exports = { 
@@ -6270,7 +6455,7 @@ module.exports = {
   // so no need for unbind here.
 
 }
-},{"../util":68}],29:[function(require,module,exports){
+},{"../util":69}],30:[function(require,module,exports){
 var _ = require('../util')
 var templateParser = require('../parsers/template')
 
@@ -6309,7 +6494,7 @@ module.exports = {
   }
 
 }
-},{"../parsers/template":59,"../util":68}],30:[function(require,module,exports){
+},{"../parsers/template":60,"../util":69}],31:[function(require,module,exports){
 var _ = require('../util')
 var compile = require('../compiler/compile')
 var templateParser = require('../parsers/template')
@@ -6438,7 +6623,7 @@ module.exports = {
   }
 
 }
-},{"../compiler/compile":19,"../parsers/template":59,"../transition":62,"../util":68}],31:[function(require,module,exports){
+},{"../compiler/compile":20,"../parsers/template":60,"../transition":63,"../util":69}],32:[function(require,module,exports){
 // manipulation directives
 exports.text       = require('./text')
 exports.html       = require('./html')
@@ -6464,7 +6649,7 @@ exports['if']      = require('./if')
 // child vm communication directives
 exports['with']    = require('./with')
 exports.events     = require('./events')
-},{"./attr":23,"./class":24,"./cloak":25,"./component":26,"./el":27,"./events":28,"./html":29,"./if":30,"./model":34,"./on":37,"./partial":38,"./ref":39,"./repeat":40,"./show":41,"./style":42,"./text":43,"./transition":44,"./with":45}],32:[function(require,module,exports){
+},{"./attr":24,"./class":25,"./cloak":26,"./component":27,"./el":28,"./events":29,"./html":30,"./if":31,"./model":35,"./on":38,"./partial":39,"./ref":40,"./repeat":41,"./show":42,"./style":43,"./text":44,"./transition":45,"./with":46}],33:[function(require,module,exports){
 var _ = require('../../util')
 
 module.exports = {
@@ -6490,7 +6675,7 @@ module.exports = {
   }
 
 }
-},{"../../util":68}],33:[function(require,module,exports){
+},{"../../util":69}],34:[function(require,module,exports){
 var _ = require('../../util')
 
 module.exports = {
@@ -6639,7 +6824,7 @@ module.exports = {
   }
 
 }
-},{"../../util":68}],34:[function(require,module,exports){
+},{"../../util":69}],35:[function(require,module,exports){
 var _ = require('../../util')
 
 var handlers = {
@@ -6696,7 +6881,7 @@ module.exports = {
   }
 
 }
-},{"../../util":68,"./checkbox":32,"./default":33,"./radio":35,"./select":36}],35:[function(require,module,exports){
+},{"../../util":69,"./checkbox":33,"./default":34,"./radio":36,"./select":37}],36:[function(require,module,exports){
 var _ = require('../../util')
 
 module.exports = {
@@ -6723,7 +6908,7 @@ module.exports = {
   }
 
 }
-},{"../../util":68}],36:[function(require,module,exports){
+},{"../../util":69}],37:[function(require,module,exports){
 var _ = require('../../util')
 var Watcher = require('../../watcher')
 var dirParser = require('../../parsers/directive')
@@ -6904,7 +7089,7 @@ function indexOf (arr, val) {
   }
   return -1
 }
-},{"../../parsers/directive":56,"../../util":68,"../../watcher":72}],37:[function(require,module,exports){
+},{"../../parsers/directive":57,"../../util":69,"../../watcher":73}],38:[function(require,module,exports){
 var _ = require('../util')
 
 module.exports = {
@@ -6964,7 +7149,7 @@ module.exports = {
     _.off(this.el, 'load', this.iframeBind)
   }
 }
-},{"../util":68}],38:[function(require,module,exports){
+},{"../util":69}],39:[function(require,module,exports){
 var _ = require('../util')
 var templateParser = require('../parsers/template')
 var vIf = require('./if')
@@ -7010,7 +7195,7 @@ module.exports = {
   }
 
 }
-},{"../parsers/template":59,"../util":68,"./if":30}],39:[function(require,module,exports){
+},{"../parsers/template":60,"../util":69,"./if":31}],40:[function(require,module,exports){
 var _ = require('../util')
 
 module.exports = {
@@ -7034,7 +7219,7 @@ module.exports = {
   }
   
 }
-},{"../util":68}],40:[function(require,module,exports){
+},{"../util":69}],41:[function(require,module,exports){
 var _ = require('../util')
 var isObject = _.isObject
 var isPlainObject = _.isPlainObject
@@ -7574,7 +7759,7 @@ function range (n) {
   }
   return ret
 }
-},{"../compiler/compile":19,"../compiler/transclude":20,"../parsers/expression":57,"../parsers/template":59,"../parsers/text":60,"../util":68,"../util/merge-option":70}],41:[function(require,module,exports){
+},{"../compiler/compile":20,"../compiler/transclude":21,"../parsers/expression":58,"../parsers/template":60,"../parsers/text":61,"../util":69,"../util/merge-option":71}],42:[function(require,module,exports){
 var transition = require('../transition')
 
 module.exports = function (value) {
@@ -7583,7 +7768,7 @@ module.exports = function (value) {
     el.style.display = value ? '' : 'none'
   }, this.vm)
 }
-},{"../transition":62}],42:[function(require,module,exports){
+},{"../transition":63}],43:[function(require,module,exports){
 var _ = require('../util')
 var prefixes = ['-webkit-', '-moz-', '-ms-']
 var camelPrefixes = ['Webkit', 'Moz', 'ms']
@@ -7684,7 +7869,7 @@ function prefix (prop) {
     }
   }
 }
-},{"../util":68}],43:[function(require,module,exports){
+},{"../util":69}],44:[function(require,module,exports){
 var _ = require('../util')
 
 module.exports = {
@@ -7700,7 +7885,7 @@ module.exports = {
   }
   
 }
-},{"../util":68}],44:[function(require,module,exports){
+},{"../util":69}],45:[function(require,module,exports){
 module.exports = {
 
   priority: 1000,
@@ -7715,7 +7900,7 @@ module.exports = {
   }
 
 }
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var _ = require('../util')
 var Watcher = require('../watcher')
 
@@ -7789,7 +7974,7 @@ module.exports = {
   }
 
 }
-},{"../util":68,"../watcher":72}],46:[function(require,module,exports){
+},{"../util":69,"../watcher":73}],47:[function(require,module,exports){
 var _ = require('../util')
 var Path = require('../parsers/path')
 
@@ -7877,7 +8062,7 @@ function contains (val, search) {
     return val.toString().toLowerCase().indexOf(search) > -1
   }
 }
-},{"../parsers/path":58,"../util":68}],47:[function(require,module,exports){
+},{"../parsers/path":59,"../util":69}],48:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -8015,7 +8200,7 @@ exports.key.keyCodes = keyCodes
 
 _.extend(exports, require('./array-filters'))
 
-},{"../util":68,"./array-filters":46}],48:[function(require,module,exports){
+},{"../util":69,"./array-filters":47}],49:[function(require,module,exports){
 var _ = require('../util')
 var Directive = require('../directive')
 var compile = require('../compiler/compile')
@@ -8216,7 +8401,7 @@ exports._cleanup = function () {
   // turn off all instance listeners.
   this.$off()
 }
-},{"../compiler/compile":19,"../compiler/transclude":20,"../directive":22,"../util":68}],49:[function(require,module,exports){
+},{"../compiler/compile":20,"../compiler/transclude":21,"../directive":23,"../util":69}],50:[function(require,module,exports){
 var _ = require('../util')
 var inDoc = _.inDoc
 
@@ -8355,7 +8540,7 @@ exports._callHook = function (hook) {
   }
   this.$emit('hook:' + hook)
 }
-},{"../util":68}],50:[function(require,module,exports){
+},{"../util":69}],51:[function(require,module,exports){
 var mergeOptions = require('../util/merge-option')
 
 /**
@@ -8444,7 +8629,7 @@ exports._init = function (options) {
     this.$mount(options.el)
   }
 }
-},{"../util/merge-option":70}],51:[function(require,module,exports){
+},{"../util/merge-option":71}],52:[function(require,module,exports){
 var _ = require('../util')
 var Observer = require('../observer')
 var Dep = require('../observer/dep')
@@ -8659,7 +8844,7 @@ exports._defineMeta = function (key, value) {
     }
   })
 }
-},{"../observer":54,"../observer/dep":53,"../util":68}],52:[function(require,module,exports){
+},{"../observer":55,"../observer/dep":54,"../util":69}],53:[function(require,module,exports){
 var _ = require('../util')
 var arrayProto = Array.prototype
 var arrayMethods = Object.create(arrayProto)
@@ -8750,7 +8935,7 @@ _.define(
 )
 
 module.exports = arrayMethods
-},{"../util":68}],53:[function(require,module,exports){
+},{"../util":69}],54:[function(require,module,exports){
 var uid = 0
 var _ = require('../util')
 
@@ -8804,7 +8989,7 @@ p.notify = function () {
 }
 
 module.exports = Dep
-},{"../util":68}],54:[function(require,module,exports){
+},{"../util":69}],55:[function(require,module,exports){
 var _ = require('../util')
 var config = require('../config')
 var Dep = require('./dep')
@@ -9041,7 +9226,7 @@ p.removeVm = function (vm) {
 
 module.exports = Observer
 
-},{"../config":21,"../util":68,"./array":52,"./dep":53,"./object":55}],55:[function(require,module,exports){
+},{"../config":22,"../util":69,"./array":53,"./dep":54,"./object":56}],56:[function(require,module,exports){
 var _ = require('../util')
 var objProto = Object.prototype
 
@@ -9108,7 +9293,7 @@ _.define(
     }
   }
 )
-},{"../util":68}],56:[function(require,module,exports){
+},{"../util":69}],57:[function(require,module,exports){
 var _ = require('../util')
 var Cache = require('../cache')
 var cache = new Cache(1000)
@@ -9268,7 +9453,7 @@ exports.parse = function (s) {
   cache.put(s, dirs)
   return dirs
 }
-},{"../cache":18,"../util":68}],57:[function(require,module,exports){
+},{"../cache":19,"../util":69}],58:[function(require,module,exports){
 var _ = require('../util')
 var Path = require('./path')
 var Cache = require('../cache')
@@ -9511,7 +9696,7 @@ exports.parse = function (exp, needSet) {
 
 // Export the pathRegex for external use
 exports.pathTestRE = pathTestRE
-},{"../cache":18,"../util":68,"./path":58}],58:[function(require,module,exports){
+},{"../cache":19,"../util":69,"./path":59}],59:[function(require,module,exports){
 var _ = require('../util')
 var Cache = require('../cache')
 var pathCache = new Cache(1000)
@@ -9809,7 +9994,7 @@ exports.set = function (obj, path, val) {
   }
   return true
 }
-},{"../cache":18,"../util":68}],59:[function(require,module,exports){
+},{"../cache":19,"../util":69}],60:[function(require,module,exports){
 var _ = require('../util')
 var Cache = require('../cache')
 var templateCache = new Cache(1000)
@@ -10070,7 +10255,7 @@ exports.parse = function (template, clone, noSelector) {
     ? exports.clone(frag)
     : frag
 }
-},{"../cache":18,"../util":68}],60:[function(require,module,exports){
+},{"../cache":19,"../util":69}],61:[function(require,module,exports){
 var Cache = require('../cache')
 var config = require('../config')
 var dirParser = require('./directive')
@@ -10250,7 +10435,7 @@ function inlineFilters (exp) {
     }
   }
 }
-},{"../cache":18,"../config":21,"./directive":56}],61:[function(require,module,exports){
+},{"../cache":19,"../config":22,"./directive":57}],62:[function(require,module,exports){
 var _ = require('../util')
 var addClass = _.addClass
 var removeClass = _.removeClass
@@ -10440,7 +10625,7 @@ module.exports = function (el, direction, op, data, cb) {
     push(el, direction, op, leaveClass, cb)
   }
 }
-},{"../util":68}],62:[function(require,module,exports){
+},{"../util":69}],63:[function(require,module,exports){
 var _ = require('../util')
 var applyCSSTransition = require('./css')
 var applyJSTransition = require('./js')
@@ -10592,7 +10777,7 @@ var apply = exports.apply = function (el, direction, op, vm, cb) {
     if (cb) cb()
   }
 }
-},{"../util":68,"./css":61,"./js":63}],63:[function(require,module,exports){
+},{"../util":69,"./css":62,"./js":64}],64:[function(require,module,exports){
 /**
  * Apply JavaScript enter/leave functions.
  *
@@ -10639,7 +10824,7 @@ module.exports = function (el, direction, op, data, def, vm, cb) {
     }
   }
 }
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 var config = require('../config')
 
 /**
@@ -10700,7 +10885,7 @@ function enableDebug () {
     }
   }
 }
-},{"../config":21}],65:[function(require,module,exports){
+},{"../config":22}],66:[function(require,module,exports){
 var config = require('../config')
 
 /**
@@ -10910,7 +11095,7 @@ exports.extractContent = function (el, asFragment) {
   return rawContent
 }
 
-},{"../config":21}],66:[function(require,module,exports){
+},{"../config":22}],67:[function(require,module,exports){
 /**
  * Can we use __proto__?
  *
@@ -11012,7 +11197,7 @@ if (inBrowser && !exports.isIE9) {
     ? 'webkitAnimationEnd'
     : 'animationend'
 }
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var _ = require('./debug')
 
 /**
@@ -11085,7 +11270,7 @@ exports.applyFilters = function (value, filters, vm, oldVal) {
   }
   return value
 }
-},{"./debug":64}],68:[function(require,module,exports){
+},{"./debug":65}],69:[function(require,module,exports){
 var lang   = require('./lang')
 var extend = lang.extend
 
@@ -11094,7 +11279,7 @@ extend(exports, require('./env'))
 extend(exports, require('./dom'))
 extend(exports, require('./filter'))
 extend(exports, require('./debug'))
-},{"./debug":64,"./dom":65,"./env":66,"./filter":67,"./lang":69}],69:[function(require,module,exports){
+},{"./debug":65,"./dom":66,"./env":67,"./filter":68,"./lang":70}],70:[function(require,module,exports){
 /**
  * Check is a string starts with $ or _
  *
@@ -11325,7 +11510,7 @@ exports.debounce = function(func, wait) {
     return result
   }
 }
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 var _ = require('./index')
 var extend = _.extend
 
@@ -11584,7 +11769,7 @@ module.exports = function mergeOptions (parent, child, vm) {
   }
   return options
 }
-},{"./index":68}],71:[function(require,module,exports){
+},{"./index":69}],72:[function(require,module,exports){
 var _ = require('./util')
 var extend = _.extend
 
@@ -11669,7 +11854,7 @@ extend(p, require('./api/child'))
 extend(p, require('./api/lifecycle'))
 
 module.exports = _.Vue = Vue
-},{"./api/child":11,"./api/data":12,"./api/dom":13,"./api/events":14,"./api/global":15,"./api/lifecycle":16,"./directives":31,"./filters":47,"./instance/compile":48,"./instance/events":49,"./instance/init":50,"./instance/scope":51,"./util":68}],72:[function(require,module,exports){
+},{"./api/child":12,"./api/data":13,"./api/dom":14,"./api/events":15,"./api/global":16,"./api/lifecycle":17,"./directives":32,"./filters":48,"./instance/compile":49,"./instance/events":50,"./instance/init":51,"./instance/scope":52,"./util":69}],73:[function(require,module,exports){
 var _ = require('./util')
 var config = require('./config')
 var Observer = require('./observer')
@@ -11927,4 +12112,4 @@ function traverse (obj) {
 }
 
 module.exports = Watcher
-},{"./batcher":17,"./config":21,"./observer":54,"./parsers/expression":57,"./util":68}]},{},[3]);
+},{"./batcher":18,"./config":22,"./observer":55,"./parsers/expression":58,"./util":69}]},{},[3]);

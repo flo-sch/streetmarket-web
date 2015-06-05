@@ -5,11 +5,12 @@
   var Alert = require('./Alert.vue');
   var Camera = require('./Camera.vue');
   var FurnituresList = require('./FurnituresList.vue');
+  var Map = require('./Map.vue');
 
   module.exports = {
     el: 'body',
     data: {
-      view: 'furnitures',
+      view: 'map',
       isCompatible: true,
       isLocated: false,
       isRecording: false,
@@ -38,8 +39,14 @@
           response.furnitures.forEach(function (furniture) {
             this.furnitures.push(this.parseFurniture(furniture));
           }, this);
+
+          this.$broadcast('app:furnitures:listed');
         }
       }, this);
+
+      if (this.position === null) {
+        this.definePosition();
+      }
     },
     events: {
       'browser:getUserMedia:unsupported': function () {
@@ -93,7 +100,8 @@
     components: {
       'camera': Camera,
       'furnitures': FurnituresList,
-      'alert': Alert
+      'alert': Alert,
+      'map': Map
     },
     methods: {
       setView: function (view) {
@@ -102,10 +110,6 @@
       record: function (event) {
         if (event) {
           event.preventDefault();
-        }
-
-        if (this.position === null) {
-          this.definePosition();
         }
 
         this.setView('camera');
@@ -243,9 +247,34 @@
         return {
           id: furniture.id,
           title: furniture.title,
-          tookAt: moment(furniture.took_at).fromNow(),
+          tookAt: (new moment(furniture.took_at)).fromNow(),
+          latitude: furniture.latitude,
+          longitude: furniture.longitude,
           picture: furniture.picture
         }
+      },
+      calculateDistanceBetweenLocations: function (origin, target) {
+        var distance,
+            earthRadius = 6371;
+
+        distance = 0.5 -
+                  Math.cos(this.degreeToRadian(target.latitude - origin.latitude)) / 2 +
+                  Math.cos(this.degreeToRadian(origin.latitude)) * Math.cos(this.degreeToRadian(target.latitude)) *
+                  (1 - Math.cos(this.degreeToRadian(target.longitude - origin.longitude))) / 2;
+
+        distance = earthRadius * 2 * Math.asin(Math.sqrt(distance));
+
+        if (distance > 10) {
+          distance = Math.round(distance * 100) / 100 + ' kms';
+        } else {
+          distance *= 1000;
+          distance = Math.round(distance * 100) / 100 + ' m';
+        }
+
+        return distance;
+      },
+      degreeToRadian: function (degree) {
+        return degree * Math.PI / 180;
       }
     }
   }

@@ -7,6 +7,7 @@
         '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/css/ripples.css'
         '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-material-design/dist/css/material-fullpalette.css'
         '@FsbStreetMarketAppBundle/Resources/public/sass/camera.scss'
+        '@FsbStreetMarketAppBundle/Resources/public/sass/map.scss'
         filter='?uglifycss'
         output='css/home.min.css'
         %}
@@ -17,7 +18,17 @@
 {% block app_container %}
     <section id='alert-container' v-component='alert' v-ref='Alert'></section>
     <main v-component='{% raw %}{{ view }}{% endraw %}' v-ref='View'></main>
-    <div id='map-canvas'></div>
+    <nav class='navbar navbar-fixed-bottom navbar-material-indigo-800 navbar-center'>
+        <p class='navbar-text text-muted' v-if='!isLocated'><span class='glyphicon glyphicon-map-marker' aria-hidden='true'></span> Looking for your location...</p>
+        <a class='btn btn-md btn-info btn-aligned' href='#take-picture' v-on='click: takePicture' v-if='isLocated && isRecording && !isTaken'><span class='glyphicon glyphicon-camera' aria-hidden='true'></span></a>
+        <a class='btn btn-md btn-info btn-aligned' href='#record' v-on='click: record' v-if='isTaken'><span class='glyphicon glyphicon-refresh' aria-hidden='true'></span></a>
+        <form class='navbar-form' action='#picture' v-if='isTaken'>
+            <div class='form-group'>
+                <input class='form-control' type='text' placeholder='Name' v-model='title' />
+            </div>
+        </form>
+        <a class='btn btn-md btn-success btn-aligned' href='#validate-picture' v-on='click: validatePicture' v-if='isTaken'><span class='glyphicon glyphicon-check' aria-hidden='true'></span></a>
+    </nav>
 {% endblock %}
 
 {% block javascripts %}
@@ -34,12 +45,4 @@
         %}
         <script src='{{ asset_url }}'></script>
     {% endjavascripts %}
-    <script>
-        google.maps.event.addDomListener(window, 'load', function () {
-            var map = new google.maps.Map(document.getElementById('map-canvas'), {
-                center: new google.maps.LatLng(-34.397, 150.644),
-                zoom: 8
-            });
-        });
-    </script>
 {% endblock %}
