@@ -17,9 +17,11 @@
 {% block app_container %}
     <section id='alert-container' v-component='alert' v-ref='Alert'></section>
     <main v-component='{% raw %}{{ view }}{% endraw %}' v-ref='View'></main>
+    <div id='map-canvas'></div>
 {% endblock %}
 
 {% block javascripts %}
+    <script src='https://maps.googleapis.com/maps/api/js?key={{ apiKeys.google.maps }}'></script>
     {% javascripts
         '@FsbStreetMarketAppBundle/Resources/public/bower_components/jquery/dist/jquery.js'
         '@FsbStreetMarketAppBundle/Resources/public/bower_components/bootstrap-sass/assets/javascripts/bootstrap.js'
@@ -32,4 +34,12 @@
         %}
         <script src='{{ asset_url }}'></script>
     {% endjavascripts %}
+    <script>
+        google.maps.event.addDomListener(window, 'load', function () {
+            var map = new google.maps.Map(document.getElementById('map-canvas'), {
+                center: new google.maps.LatLng(-34.397, 150.644),
+                zoom: 8
+            });
+        });
+    </script>
 {% endblock %}
